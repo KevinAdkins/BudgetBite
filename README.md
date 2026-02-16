@@ -3,6 +3,7 @@ Senior Project
 An app that can take a picture of what you have and come up with a meal idea.
 The goal is to keep it budget friendly while recommending you healthy meals to make.
 
+# Team Members and Our Roles
 Jorge Munoz: Team Leader & AI Developer
 Kevin Adkins: Frontend Developer
 Alvaro Gonzalez: Database Developer
