@@ -1,29 +1,36 @@
+# Spike Plan
 
-1. **Riskiest assumption** (1 sentence)  
-	* s
-	* s
-	* s
-2. **Spike goal** (what “success” means)  
-	* s
-	* s
-	* s
-3. **Inputs → Outputs** (what data goes in, what comes out)  
-	* Computer Vision -> List
-	* List -> Recipe
-	* Recipe -> Meals
-4. **Demo plan (2–3 min)** (what you will show live)s
-	* 
-	* s
-	* s
-5. **Owner(s) + tasks** (who is responsible for what) 
-	* Jorge (Team Lead) - LLM (Computer Vision)
-	* David and Kevin - Frontend
-	* Eric and Alvaro - Backend    
-6. **Exit criteria** (clear pass/fail checks)  
-	* s
-	* s
-	* s
-7. **If it fails…** (Plan B / fallback approach)
-	* s
-	* s
-	* s
+1. **Riskiest assumption** (1 sentence)
+	- s
+
+2. **Spike goal** (what "success" means)
+	- s
+	- s
+	- s
+
+3. **Inputs -> Outputs** (what data goes in, what comes out)
+	- Computer Vision -> List
+	- List -> Recipe
+	- Recipe -> Meals
+
+4. **Demo plan (2-3 min)** (what you will show live)
+	- s
+	- s
+	- s
+
+5. **Owner(s) + tasks** (who is responsible for what)
+	- Jorge Munoz: Team Leader & AI Developer
+	- Kevin Adkins: Frontend Developer
+	- Alvaro Gonzalez: Database Developer
+	- David Abundis: Wireframe Developer
+	- Eric Gerner: Backend Developer
+
+6. **Exit criteria** (clear pass/fail checks)
+	- s
+	- s
+	- s
+
+7. **If it fails...** (Plan B / fallback approach)
+	- s
+	- s
+	- s
