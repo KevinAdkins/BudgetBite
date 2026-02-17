@@ -19,9 +19,7 @@
 ### Section 3 MVP user stories
 1. Basic user story: As a student, I want a way to come up with a quick and affordable meal using the ingredients and cooking methods available to me, so that I can eat a good, healthy meal at an affordable price and save time having to come up with a meal.
 2. I am a student with milk cheese and eggs, very little ingrediants so the app offers the available recipes with the ingrediants but also offers reccomendations of recipes with a apropriate budget teir depending on how much the ingrediants cost to make that recipe recomended.
-3. 
-
-4. User Story: As a mom, I want a healthy, affordable meal to feed my kids, so that I can save time and money, and my kids will be well-fed and have nutritious food to eat.
+3. User Story: As a mom, I want a healthy, affordable meal to feed my kids, so that I can save time and money, and my kids will be well-fed and have nutritious food to eat.
 
 ### Section 4 MVP scope vs. non-goals
 **Must have Features**
