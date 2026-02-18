@@ -18,23 +18,23 @@
 
 ### Section 3 MVP user stories
 1. Basic user story: As a student, I want a way to come up with a quick and affordable meal using the ingredients and cooking methods available to me, so that I can eat a good, healthy meal at an affordable price and save time having to come up with a meal.
-2. I am a student with milk cheese and eggs, very little ingrediants so the app offers the available recipes with the ingrediants but also offers reccomendations of recipes with a apropriate budget teir depending on how much the ingrediants cost to make that recipe recomended.
+2. I am a student with milk, cheese, and eggs, very few ingredients so the app offers the available recipes with the ingredients, but also offers recommendations of recipes with an appropriate budget tier depending on how much the ingredients cost to make the recommended.
 3. User Story: As a mom, I want a healthy, affordable meal to feed my kids, so that I can save time and money, and my kids will be well-fed and have nutritious food to eat.
 
 ### Section 4 MVP scope vs. non-goals
 **Must have Features**
 - Camera
-- AI/CV to detect the food/ingredients in image and reccomend a meal
+- AI/CV to detect the food/ingredients in an image and recommend a meal
 - UI/UX
 
 **Nice-to-have features**
 - Calories tracking
-- CI/CD Pipleine
+- CI/CD Pipeline
 
 **Explicit non-goals**
 - Will not be a budget tracker just budget how much the food costs.
-- Will not stricly count your calories, it will provide information on colories consumed based on meals 
-- tailor to a sepcific demographic like hispacic or white but many diffrerent cultures
+- Will not strictly count your calories, it will provide information on calories consumed based on meals 
+- tailor to a specific demographic, like Hispanic or white, but many different cultures
 
 ### Section 5 Acceptance criteria
 
@@ -42,11 +42,11 @@ Allow the user to take pictures of their food/ingredients
 Produce a meal suggestion within 10 seconds
 Handle an edge case when the user takes a picture that contains no food/ingredients
 Fail safely when the edge case happens and display an error message to the user
-Give reccomendations for ording cheap ingrediants.
+Give recommendations for ordering cheap ingredients.
 
 ### Section 6 Assumptions + constraints
-- Data access The CV segmenation model will be trainied on opne source data and may have difficulty with edge cases. 
-- Time constraints (what can be done by Milestone 2): Getting a working app, labeling the food for segmenation (tracing)
+- Data access: The CV segmentation model will be trained on open-source data and may have difficulty with edge cases. 
+- Time constraints (what can be done by Milestone 2): Getting a working app, labeling the food for segmentation (tracing)
   
 - Ethics/privacy limits (safety boundaries, consent): Safeguards on the AI 
 - Platform constraints (APIs, cost limits, deployment limits):
