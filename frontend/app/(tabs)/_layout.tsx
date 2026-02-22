@@ -24,6 +24,17 @@ export default function TabLayout() {
         name="pantry" 
         options={{ title: 'Pantry', tabBarIcon: ({ color }) => 
         <MaterialCommunityIcons name="fridge" size={24} color={color} /> }} />
+      
+      <Tabs.Screen
+        name="camera"
+        options={{
+          title: 'Camera',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="camera-outline" size={24} color={color} />
+          ),
+        }}
+      />
+
     </Tabs>
   );
 }
