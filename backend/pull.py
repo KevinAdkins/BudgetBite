@@ -5,11 +5,10 @@ from dotenv import load_dotenv
 
 # 1. Load the Key from your .env file
 load_dotenv()
-# IMPORTANT: This must match the name BEFORE the '=' in your .env file
 API_KEY = os.getenv("RAPIDAPI_KEY") 
 
 # 2. This is the actual Request URL for the nutrition data
-REQUEST_URL = "https://food-calories-and-macros.p.rapidapi.com/v1/nutrition"
+REQUEST_URL = "https://rapidapi.com"
 DB_PATH = "backend/data/nutrition.db"
 
 def pull_data_to_sqlite(food_query):

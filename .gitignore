@@ -1,5 +1,3 @@
 /.venv
-<<<<<<< HEAD
 .env
-=======
->>>>>>> 965266348dd091e14a0e3e946791e24e2cfcb219
+backend/data/*.db
