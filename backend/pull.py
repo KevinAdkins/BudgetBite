@@ -1,35 +1,34 @@
 import sqlite3
 import requests
 import os
-from datetime import datetime
 from dotenv import load_dotenv
 
+# 1. Load the Key from your .env file
 load_dotenv()
+API_KEY = os.getenv("X-RapidAPI-Key")
+REQUEST_URL = "https://rapidapi.com"
+DB_PATH = "backend/data/nutrition.db"
 
-# Configuration
-API_KEY = os.getenv("FOOD_API_KEY")
-DB_DIR = "backend/data"
-DB_PATH = os.path.join(DB_DIR, "nutrition.db")
-API_URL = "https://api.api-ninjas.com/v1/nutrition?query="
+def pull_data_to_sqlite(food_query):
+    # 2. Setup the headers and parameters
+    # If using RapidAPI, ensure these header names match your documentation
+    headers = {
+        "X-RapidAPI-Key": API_KEY,
+        "X-RapidAPI-Host": "food-calories-and-macros.p.rapidapi.com"
+    }
+    params = {"query": food_query}
 
-def setup_environment():
-    """Ensure the database directory exists."""
-    if not os.path.exists(DB_DIR):
-        os.makedirs(DB_DIR)
-        print(f"Created directory: {DB_DIR}")
-
-def pull_nutrition_data(food_query):
-    setup_environment()
-    
-    headers = {'X-Api-Key': API_KEY}
-    response = requests.get(API_URL + food_query, headers=headers)
-    
-    if response.status_code == 200:
+    try:
+        # 3. Make the request
+        response = requests.get(REQUEST_URL, headers=headers, params=params)
+        response.raise_for_status()
         data = response.json()
+
+        # 4. Connect to your database
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        # Added 'last_updated' for senior project documentation
+        # Create table if it doesn't exist
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS food_items (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,28 +36,25 @@ def pull_nutrition_data(food_query):
                 calories REAL,
                 protein_g REAL,
                 fat_g REAL,
-                carbs_g REAL,
-                last_updated DATETIME
+                carbs_g REAL
             )
         ''')
 
+        # 5. Insert data
         for item in data:
             cursor.execute('''
-                INSERT OR REPLACE INTO food_items 
-                (name, calories, protein_g, fat_g, carbs_g, last_updated)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (
-                item['name'], item['calories'], item['protein_g'], 
-                item['fat_total_g'], item['carbohydrates_total_g'],
-                datetime.now()
-            ))
+                INSERT OR REPLACE INTO food_items (name, calories, protein_g, fat_g, carbs_g)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (item['name'], item['calories'], item['protein_g'], 
+                  item.get('fat_total_g', 0), item.get('carbohydrates_total_g', 0)))
 
         conn.commit()
         conn.close()
-        print(f"Stored {len(data)} items for '{food_query}'")
-    else:
-        print(f"Error: {response.status_code}")
+        print(f"Successfully saved data for: {food_query}")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
-    food = input("What food should we pull? ")
-    pull_nutrition_data(food)
+    item = input("Enter a food item to save to your DB: ")
+    pull_data_to_sqlite(item)
