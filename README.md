@@ -7,7 +7,7 @@ The goal is to keep it budget-friendly while recommending you healthy meals to m
 **Jorge Munoz:** Team Leader & AI Developer<br>
 **Kevin Adkins:** Frontend Developer<br>
 **Alvaro Gonzalez:** Database Developer<br>
-**David Abundis:** Wireframe Developer / Frontend Developer<br>
+**David Abundis:** Wireframe Developer & Frontend Developer<br>
 **Eric Gerner:** Backend Developer<br>
 
 # How to Run
