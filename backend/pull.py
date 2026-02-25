@@ -3,15 +3,52 @@ import requests
 import os
 from dotenv import load_dotenv
 
-# 1. Load the Key from your .env file
+# 1. Configuration & Setup
 load_dotenv()
 API_KEY = os.getenv("RAPIDAPI_KEY") 
-
-# 2. This is the actual Request URL for the nutrition data
+# Shared DB for both recipes and nutrition data
+DB_PATH = os.path.join("backend", "data", "demo.db")
+# Ensure the specific endpoint URL is used, not just the website domain
 REQUEST_URL = "https://food-calories-and-macros.p.rapidapi.com/v1/nutrition"
-DB_PATH = "backend/data/demo.db"
 
-def pull_data_to_sqlite(food_query):
+def get_db_connection():
+    """Ensures the directory exists and connects to SQLite."""
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    return sqlite3.connect(DB_PATH)
+
+def init_db():
+    """Creates the table structure if it doesn't exist."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS food_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE,
+            calories REAL,
+            protein_g REAL,
+            fat_g REAL,
+            carbs_g REAL
+        )
+    ''') 
+    conn.commit()
+    conn.close()
+
+def fetch_and_save_food(food_query):
+    """Checks local DB first, then pulls from API if missing."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Step A: Check if we already have this data locally
+    cursor.execute("SELECT * FROM food_items WHERE name = ?", (food_query.lower(),))
+    existing_item = cursor.fetchone()
+
+    if existing_item:
+        print(f"✅ Found '{food_query}' in local database. Skipping API call.") # cite: 1.1
+        conn.close()
+        return existing_item
+
+    # Step B: If not found, call the API
+    print(f"🔍 '{food_query}' not found. Fetching from API...")
     headers = {
         "X-RapidAPI-Key": API_KEY,
         "X-RapidAPI-Host": "food-calories-and-macros.p.rapidapi.com"
@@ -19,50 +56,37 @@ def pull_data_to_sqlite(food_query):
     params = {"query": food_query}
 
     try:
-        # 3. Make the request to the correct endpoint
         response = requests.get(REQUEST_URL, headers=headers, params=params)
-        
-        # This will tell us if the key or URL is wrong before it crashes
-        print(f"DEBUG: Response Status: {response.status_code}")
-        
-        response.raise_for_status()
-        data = response.json()
+        response.raise_for_status() # cite: 1.1
+        data = response.json() # cite: 1.1
 
-        # 4. Connect to your database folder
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS food_items (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT UNIQUE,
-                calories REAL,
-                protein_g REAL,
-                fat_g REAL,
-                carbs_g REAL
-            )
-        ''')
-
-        # 5. Insert data and print output for confirmation
         if not data:
-            print(f"No results found for: {food_query}")
-            return
+            print(f"❌ No results found for: {food_query}")
+            return None
 
-        for item in data:
-            cursor.execute('''
-                INSERT OR REPLACE INTO food_items (name, calories, protein_g, fat_g, carbs_g)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (item['name'], item['calories'], item['protein_g'], 
-                  item.get('fat_total_g', 0), item.get('carbohydrates_total_g', 0)))
-            print(f"Output: Saved {item['name']} ({item['calories']} cal)")
-
+        # Step C: Save the first result to the database
+        item = data[0] # Assuming the first result is the best match
+        cursor.execute('''
+            INSERT OR REPLACE INTO food_items (name, calories, protein_g, fat_g, carbs_g)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (
+            item.get('name').lower(), 
+            item.get('calories'), 
+            item.get('protein'), 
+            item.get('fat'), 
+            item.get('carbohydrates')
+        )) # cite: 1.1
+        
         conn.commit()
-        conn.close()
-        print(f"--- Database Update Complete for: {food_query} ---")
+        print(f"💾 Successfully saved {item.get('name')} to SQLite.")
+        return item
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"❌ Error during API pull: {e}")
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
-    item = input("Enter a food item to save to your DB: ")
-    pull_data_to_sqlite(item)
+    init_db()
+    item_to_find = input("Enter a food item: ").strip()
+    fetch_and_save_food(item_to_find)
