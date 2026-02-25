@@ -42,6 +42,46 @@ def save_recipe_to_db(ingredients, recipe_data):
     except Exception as e:
         print(f"Database Error: {e}")
 
+
+def fetch_all_recipes():
+    """Reads all saved recipes from SQLite for quick verification."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Ensure the table exists even if no recipes were saved yet
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS saved_recipes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
+            ingredients TEXT,
+            instructions TEXT,
+            cost_estimate TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    cursor.execute('''
+        SELECT id, title, ingredients, instructions, cost_estimate, created_at
+        FROM saved_recipes
+        ORDER BY created_at DESC
+    ''')
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    # Map rows to a JSON-friendly structure
+    return [
+        {
+            "id": row[0],
+            "title": row[1],
+            "ingredients": row[2].split(", ") if row[2] else [],
+            "instructions": row[3],
+            "cost_estimate": row[4],
+            "created_at": row[5]
+        }
+        for row in rows
+    ]
+
 # --- AI SERVICE CALLS ---
 def run_cv_model(image_path):
     # This simulates your Computer Vision model identifying items
@@ -98,3 +138,36 @@ def generate_recipe():
         if os.path.exists(temp_path):
             os.remove(temp_path)
         return jsonify({"error": str(e)}), 500
+
+
+@recipe_bp.route('/recipes', methods=['POST'])
+def create_recipe():
+    # Manual insert endpoint for testing and quick data entry
+    data = request.get_json(silent=True) or {}
+
+    title = (data.get('title') or '').strip()
+    ingredients = data.get('ingredients') or []
+    instructions = (data.get('instructions') or '').strip()
+    cost_estimate = (data.get('cost_estimate') or '').strip()
+
+    if not title:
+        return jsonify({"error": "title is required"}), 400
+    if not instructions:
+        return jsonify({"error": "instructions are required"}), 400
+    if not isinstance(ingredients, list) or not all(isinstance(i, str) for i in ingredients):
+        return jsonify({"error": "ingredients must be a list of strings"}), 400
+
+    save_recipe_to_db(ingredients, {
+        "title": title,
+        "instructions": instructions,
+        "cost_estimate": cost_estimate
+    })
+
+    return jsonify({"success": True}), 201
+
+
+@recipe_bp.route('/recipes', methods=['GET'])
+def list_recipes():
+    # Simple read endpoint to verify inserts from Postman or the frontend
+    recipes = fetch_all_recipes()
+    return jsonify({"recipes": recipes}), 200

@@ -1,3 +1,4 @@
 /.venv
 .env
 backend/data/*.db
+backend/routes/__pycache__/recipe_routes.cpython-313.pyc

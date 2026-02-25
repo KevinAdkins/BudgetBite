@@ -8,8 +8,8 @@ load_dotenv()
 API_KEY = os.getenv("RAPIDAPI_KEY") 
 
 # 2. This is the actual Request URL for the nutrition data
-REQUEST_URL = "https://rapidapi.com"
-DB_PATH = "backend/data/nutrition.db"
+REQUEST_URL = "https://food-calories-and-macros.p.rapidapi.com/v1/nutrition"
+DB_PATH = "backend/data/demo.db"
 
 def pull_data_to_sqlite(food_query):
     headers = {
