@@ -1,4 +1,4 @@
 /.venv
 .env
 backend/data/*.db
-backend/routes/__pycache__
+__pycache__
