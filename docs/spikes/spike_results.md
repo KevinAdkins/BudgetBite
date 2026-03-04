@@ -14,4 +14,4 @@ The computer vision model is not performing how we hoped and was very innacurate
 
 5. **Risk mitigation plan**
   The computer vision model was risky to use since we don't have the data nor the time to use it. <br>
-  We mitagetd to a LLM for vision to text since that was beneficial in our time constraints.
+  We mitigated to a LLM for vision to text since that was beneficial in our time constraints.
