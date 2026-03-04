@@ -22,7 +22,9 @@ Document:
 
 Source of recipes - https://www.themealdb.com/api.php
 
-Number of recipes indexed - 
+### Number of recipes indexed
+How many recipes will be retrived fron the API
+
 Preprocessing steps 
 1. Query using the main ingredient in the SQLite Database
 2. Filter the number of recipes to only the ones that use 90% percet of the ingredients
