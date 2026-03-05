@@ -2,6 +2,10 @@
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Load environment variables from .env file
 
 # Define strict schema - only food items allowed
 class Ingredient(BaseModel):
@@ -17,7 +21,7 @@ class IngredientList(BaseModel):
 with open('Nichi-Fridge.jpg', 'rb') as f:
     image_bytes = f.read()
 
-client = genai.Client()
+client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
 SYSTEM_PROMPT = """You are a food ingredient extraction specialist.
 
