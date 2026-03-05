@@ -1,2 +1,6 @@
 # Backend
-pip install Flask
+Flask
+# Gemini API Client
+google-genai
+# For environment variable management
+python-dotenv
