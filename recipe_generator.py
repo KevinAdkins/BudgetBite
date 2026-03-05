@@ -1,9 +1,13 @@
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Load environment variables from .env file
 
 # Shared client instance for both extraction and generation steps
-client = genai.Client()
+client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
 # ── Step 1: Ingredient Extraction ──────────────────────────────────────────
 class Ingredient(BaseModel):
