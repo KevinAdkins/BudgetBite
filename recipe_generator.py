@@ -3,11 +3,15 @@ from google.genai import types
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
+from backend.pull import run_search 
 
 load_dotenv()  # Load environment variables from .env file
 
 # Shared client instance for both extraction and generation steps
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
+
+#Image to be processed - Change this path to test with different images in the foodImages folder
+img = 'foodImages/dogImage.jpeg'
 
 # ── Step 1: Ingredient Extraction ──────────────────────────────────────────
 class Ingredient(BaseModel):
@@ -20,7 +24,7 @@ class IngredientList(BaseModel):
     ingredients: list[Ingredient]
     non_food_items_detected: bool
 
-with open('Nichi-Fridge.jpg', 'rb') as f:
+with open(img, 'rb') as f:
     image_bytes = f.read()
 
 EXTRACTION_PROMPT = """You are a food ingredient extraction specialist.
@@ -51,6 +55,12 @@ if extraction_response.text is None:
 
 extracted = IngredientList.model_validate_json(extraction_response.text)
 
+def validate_extraction(extracted: IngredientList) -> None:
+    if len(extracted.ingredients) == 0:
+        raise ValueError("No ingredients detected — image may not contain food")
+
+validate_extraction(extracted)
+
 print(f"Non-food items detected: {extracted.non_food_items_detected}\n")
 for ing in extracted.ingredients:
     qty = f"{ing.quantity} {ing.unit}".strip() if ing.quantity else "unknown qty"
@@ -64,7 +74,34 @@ for ing in extracted.ingredients:
 
 ingredient_text = "\n".join(ingredient_lines)
 
-# ── Step 3: Recipe Generation ──────────────────────────────────────────────
+# ── Step 3: Fetch similar recipe from database for context ─────────────────
+# Search DB using the best matching ingredient
+def get_best_search_term(ingredients: IngredientList) -> str:
+    priority = ["protein", "vegetable", "grain"]
+    for category in priority:
+        match = next((i for i in ingredients.ingredients if i.category == category), None)
+        if match:
+            return match.name
+    return ingredients.ingredients[0].name if ingredients.ingredients else ""
+
+search_term = get_best_search_term(extracted)
+meal = run_search(search_term)
+
+if meal:
+    db_context = f"""
+Here is a similar recipe from our database for reference:
+Name: {meal['name']}
+Category: {meal['category']}
+Ingredients: {meal['ingredients']}
+Instructions: {meal['instructions']}
+"""
+else:
+    db_context = ""
+
+print("Database context for recipe generation:")
+print(db_context.strip() if db_context else "No similar recipe found in database.\n")
+
+# ── Step 4: Recipe Generation ──────────────────────────────────────────────
 RECIPE_PROMPT = """You are a helpful and creative recipe suggestion assistant.
 RULES:
 1. Suggest one recipe based on the following list of ingredients.
@@ -72,7 +109,9 @@ RULES:
 3. Provide a simple recipe name and a brief description of the dish.
 4. Provide a clear list of the ingredients used in the recipe, referencing the provided ingredient list.
 5. Provide the steps to prepare the dish, keeping it simple and easy to follow.
-6. If the ingredients cannot make a coherent dish, suggest a simple way to combine them.
+6. Use the similar recipe from the database as inspiration, but do not copy it. Focus on the provided ingredients.
+7. If the ingredients cannot make a coherent dish, suggest a simple way to combine them.
+8. Assume the user has salt and pepper on hand, but do not assume any other ingredients or special equipment.
 """
 
 recipe_response = client.models.generate_content(
@@ -82,7 +121,7 @@ recipe_response = client.models.generate_content(
         response_mime_type='text/plain',
     ),
     contents=[
-        f"Based on the following ingredients, suggest a recipe:\n{ingredient_text}"
+        f"Based on the following ingredients, suggest a recipe:\n{ingredient_text}\n and use the recipe for context:\n{db_context}"
     ]
 )
 

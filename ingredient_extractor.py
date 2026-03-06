@@ -18,7 +18,7 @@ class IngredientList(BaseModel):
     ingredients: list[Ingredient]
     non_food_items_detected: bool  # flag if image contains non-food items
 
-with open('Nichi-Fridge.jpg', 'rb') as f:
+with open('foodImages/Nichi-Fridge.jpg', 'rb') as f:
     image_bytes = f.read()
 
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
