@@ -1,0 +1,15 @@
+# Core Framework
+Flask==3.0.0
+flask-cors==4.0.0
+requests==2.31.0
+python-dotenv==1.0.0
+
+# Testing (optional - uncomment when needed)
+# pytest==7.4.3
+# pytest-flask==1.3.0
+
+# Input Validation (optional - uncomment when needed)
+# marshmallow==3.20.1
+
+# Rate Limiting (optional - uncomment when needed)
+# flask-limiter==3.5.0
