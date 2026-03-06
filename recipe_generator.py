@@ -11,7 +11,7 @@ load_dotenv()  # Load environment variables from .env file
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
 #Image to be processed - Change this path to test with different images in the foodImages folder
-img = 'foodImages/dogImage.jpeg'
+img = 'foodImages/spaghetti-ingredients.jpg'
 
 # ── Step 1: Ingredient Extraction ──────────────────────────────────────────
 class Ingredient(BaseModel):
@@ -19,6 +19,7 @@ class Ingredient(BaseModel):
     quantity: str | None
     unit: str | None
     category: str
+    confidence: float  # 0.0 to 1.0 - LLM rates its own certainty
 
 class IngredientList(BaseModel):
     ingredients: list[Ingredient]
@@ -35,6 +36,7 @@ RULES (strictly enforced):
 4. If you cannot confidently identify a food item, skip it
 5. Do NOT infer ingredients that are not visually present
 6. Quantities should reflect what is visible, not recipe amounts
+7. Assign a confidence score (0.0-1.0) based on how certain you are of the identification
 """
 
 extraction_response = client.models.generate_content(
@@ -45,7 +47,7 @@ extraction_response = client.models.generate_content(
         response_schema=IngredientList,
     ),
     contents=[
-        types.Part.from_bytes(data=image_bytes, mime_type='image/jpeg'),
+        types.Part.from_bytes(data=image_bytes, mime_type='i with confidence scores. Be conservative — if unsure, exclude it or assign low confidence
         'Extract only food ingredients visible in this image. Be conservative — if unsure, exclude it.'
     ]
 )
@@ -61,14 +63,33 @@ def validate_extraction(extracted: IngredientList) -> None:
 
 validate_extraction(extracted)
 
-print(f"Non-food items detected: {extracted.non_food_items_detected}\n")
-for ing in extracted.ingredients:
-    qty = f"{ing.quantity} {ing.unit}".strip() if ing.quantity else "unknown qty"
-    print(f"  - {ing.name} ({ing.category}): {qty}")
+# Filter by confidence threshold
+CONFIDENCE_THRESHOLD = 0.7
+validated_ingredients = [
+    ing for ing in extracted.ingredients
+    if ing.confidence >= CONFIDENCE_THRESHOLD
+]
 
+if len(validated_ingredients) == 0:
+    raise ValueError(f"No ingredients with confidence >= {CONFIDENCE_THRESHOLD}")
+
+print(f"Extracted {len(extracted.ingredients)} ingredients, using {len(validated_ingredients)} with confidence >= {CONFIDENCE_THRESHOLD}")
+print(f"Non-food items detected: {extracted.non_food_items_detected}\n")
+
+print("[ALL EXTRACTED INGREDIENTS]")
+for ing in extracted.ingredients:
+    qty = f"{ing.quantity} {ing.unit}"list[Ingredient]) -> str:
+    priority = ["protein", "vegetable", "grain"]
+    for category in priority:
+        match = next((i for i in ingredients if i.category == category), None)
+        if match:
+            return match.name
+    return ingredients[0].name if ingredients else ""
+
+search_term = get_best_search_term(validated_ingredients
 # ── Step 2: Format ingredients for recipe generator ────────────────────────
 ingredient_lines = []
-for ing in extracted.ingredients:
+for ing in validated_ingredients:
     qty = f"{ing.quantity} {ing.unit}".strip() if ing.quantity else ""
     ingredient_lines.append(f"- {qty} {ing.name}".strip())
 
