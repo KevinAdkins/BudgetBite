@@ -13,6 +13,7 @@ class Ingredient(BaseModel):
     quantity: str | None  # e.g. "2 cups", "1 tbsp"
     unit: str | None      # normalized unit if detectable
     category: str         # e.g. "vegetable", "protein", "dairy", "spice"
+    confidence: float     # 0.0 to 1.0 - LLM rates its own certainty
 
 class IngredientList(BaseModel):
     ingredients: list[Ingredient]
@@ -32,6 +33,7 @@ RULES (strictly enforced):
 4. If you cannot confidently identify a food item, skip it
 5. Do NOT infer ingredients that are not visually present
 6. Quantities should reflect what is visible, not recipe amounts
+7. Assign a confidence score (0.0-1.0) based on how certain you are of the identification
 """
 
 response = client.models.generate_content(
@@ -45,8 +47,7 @@ response = client.models.generate_content(
         types.Part.from_bytes(
             data=image_bytes,
             mime_type='image/jpeg',
-        ),
-        'Extract only food ingredients visible in this image. Be conservative — if unsure, exclude it.'
+        ), with confidence scores. Be conservative — if unsure, exclude it or assign low confidence.'
     ]
 )
 
@@ -55,6 +56,18 @@ if response.text is None:
 result = IngredientList.model_validate_json(response.text)
 
 print(f"Non-food items detected: {result.non_food_items_detected}\n")
+
+# After extraction, filter out low confidence items
+CONFIDENCE_THRESHOLD = 0.7
+validated_ingredients = [
+    ing for ing in result.ingredients
+    if ing.confidence >= CONFIDENCE_THRESHOLD
+]
+
+print(f"Extracted {len(result.ingredients)} ingredients, {len(validated_ingredients)} with confidence >= {CONFIDENCE_THRESHOLD}\n")
+
 for ing in result.ingredients:
     qty = f"{ing.quantity} {ing.unit}".strip() if ing.quantity else "unknown qty"
+    confidence_icon = "✓" if ing.confidence >= CONFIDENCE_THRESHOLD else "✗"
+    print(f"{confidence_icon} {ing.name} ({ing.category}): {qty} [confidence: {ing.confidence:.2f}]f ing.quantity else "unknown qty"
     print(f"- {ing.name} ({ing.category}): {qty}")
