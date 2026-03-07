@@ -1,0 +1,1 @@
+# Makes models a package for easier imports
