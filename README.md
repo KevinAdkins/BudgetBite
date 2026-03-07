@@ -58,7 +58,7 @@ You can test if the backend is working by visiting these endpoints in your brows
 ### 4. Genimi API Setup
 Create a .env file
 ```bash
-Type in GEMINI_API_KEY=your-api-key
+GEMINI_API_KEY=your-api-key
 ```
 
 ## API Endpoints
