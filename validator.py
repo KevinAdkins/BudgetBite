@@ -27,7 +27,7 @@ load_dotenv()
 # ═══════════════════════════════════════════════════════════════════════════
 
 CONFIDENCE_THRESHOLD = 0.7  # Only use ingredients with confidence >= 0.7
-IMAGE_PATH = 'foodImages/easy/burger.jpg'
+IMAGE_PATH = 'foodImages/easy/spaghetti-ingredients.jpg'
 
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
@@ -117,7 +117,7 @@ def filter_by_confidence(ingredient_list: IngredientList, threshold: float = 0.7
 # Step 3: Generate Recipe
 # ═══════════════════════════════════════════════════════════════════════════
 
-def generate_recipe(ingredients: List[Ingredient], max_retries: int = 3) -> str: # pyright: ignore[reportReturnType]
+def generate_recipe(ingredients: List[Ingredient], max_retries: int = 3) -> tuple[str,dict | None]: # pyright: ignore[reportReturnType]
     """Generate recipe based on validated ingredients."""
     
     if len(ingredients) == 0:
@@ -182,7 +182,7 @@ RULES:
             if recipe_response.text is None:
                 raise ValueError("Recipe generation returned no response")
 
-            return recipe_response.text.strip()
+            return recipe_response.text.strip(), meal # type: ignore
             
         except Exception as e:
             if attempt < max_retries - 1:
@@ -354,7 +354,19 @@ def main():
     
     # Step 3: Generate recipe
     print("\n[STEP 3] Generating recipe...")
-    recipe = generate_recipe(validated_ingredients)
+    recipe, db_meal = generate_recipe(validated_ingredients)
+
+    if db_meal:
+        print("\n[DATABASE REFERENCE MEAL]")
+        print("-" * 80)
+        print(f"Name: {db_meal['name']}") # type: ignore
+        print(f"Category: {db_meal['category']}") # type: ignore
+        print(f"Ingredients: {db_meal['ingredients']}") # type: ignore
+        print(f"Instructions: {db_meal['instructions']}") # type: ignore
+        print("-" * 80)
+    else:
+        print("\nNo similar meal found in database for additional context.")
+
     print("✓ Recipe generated")
     
     print("\n[GENERATED RECIPE]")
