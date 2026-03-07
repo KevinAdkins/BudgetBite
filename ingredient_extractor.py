@@ -19,7 +19,7 @@ class IngredientList(BaseModel):
     ingredients: list[Ingredient]
     non_food_items_detected: bool  # flag if image contains non-food items
 
-with open('foodImages/Nichi-Fridge.jpg', 'rb') as f:
+with open('foodImages/burger-ingredients.jpg', 'rb') as f:
     image_bytes = f.read()
 
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
@@ -47,7 +47,7 @@ response = client.models.generate_content(
         types.Part.from_bytes(
             data=image_bytes,
             mime_type='image/jpeg',
-        ), with confidence scores. Be conservative — if unsure, exclude it or assign low confidence.'
+        ),
     ]
 )
 
@@ -69,5 +69,4 @@ print(f"Extracted {len(result.ingredients)} ingredients, {len(validated_ingredie
 for ing in result.ingredients:
     qty = f"{ing.quantity} {ing.unit}".strip() if ing.quantity else "unknown qty"
     confidence_icon = "✓" if ing.confidence >= CONFIDENCE_THRESHOLD else "✗"
-    print(f"{confidence_icon} {ing.name} ({ing.category}): {qty} [confidence: {ing.confidence:.2f}]f ing.quantity else "unknown qty"
-    print(f"- {ing.name} ({ing.category}): {qty}")
+    print(f"{confidence_icon} {ing.name} ({ing.category}): {qty} [confidence: {ing.confidence:.2f}]")

@@ -1,19 +1,34 @@
+"""""
+Recipe Generator
+Extracts ingredients from a food image and suggests a recipe using Gemini 3 Flash Preview.
+
+Workflow:
+1. Extract ingredients from image 
+2. Normalize and filter ingredients
+3. Generate recipe based on filtered ingredients
+"""""
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
 from backend.pull import search_multiple
+# Load environment variables from .env file
+load_dotenv()
 
-load_dotenv()  # Load environment variables from .env file
+# ═══════════════════════════════════════════════════════════════════════════
+# Configuration
+# ═══════════════════════════════════════════════════════════════════════════
 
 # Shared client instance for both extraction and generation steps
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
 #Image to be processed - Change this path to test with different images in the foodImages folder
-img = 'foodImages/spaghetti-ingredients.jpg'
+img = 'foodImages/easy/burger.jpg'
 
-# ── Step 1: Ingredient Extraction ──────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════
+# Step 1: Ingredient Extraction
+# ═══════════════════════════════════════════════════════════════════════════
 class Ingredient(BaseModel):
     name: str
     quantity: str | None
@@ -47,8 +62,8 @@ extraction_response = client.models.generate_content(
         response_schema=IngredientList,
     ),
     contents=[
-        types.Part.from_bytes(data=image_bytes, mime_type='i with confidence scores. Be conservative — if unsure, exclude it or assign low confidence
-        'Extract only food ingredients visible in this image. Be conservative — if unsure, exclude it.'
+        types.Part.from_bytes(data=image_bytes, mime_type='image/jpeg'),
+        types.Part.from_text(text='Extract only food ingredients visible in this image. Be conservative — if unsure, exclude it.'),
     ]
 )
 
@@ -78,7 +93,10 @@ print(f"Non-food items detected: {extracted.non_food_items_detected}\n")
 
 print("[ALL EXTRACTED INGREDIENTS]")
 for ing in extracted.ingredients:
-    qty = f"{ing.quantity} {ing.unit}"list[Ingredient]) -> str:
+    qty = f"{ing.quantity} {ing.unit}".strip() if ing.quantity else ""
+    print(f"  {qty} {ing.name} ({ing.category}) - confidence: {ing.confidence}")
+
+def get_best_search_term(ingredients: list[Ingredient]) -> str:
     priority = ["protein", "vegetable", "grain"]
     for category in priority:
         match = next((i for i in ingredients if i.category == category), None)
@@ -86,7 +104,7 @@ for ing in extracted.ingredients:
             return match.name
     return ingredients[0].name if ingredients else ""
 
-search_term = get_best_search_term(validated_ingredients
+search_term = get_best_search_term(validated_ingredients)
 # ── Step 2: Format ingredients for recipe generator ────────────────────────
 ingredient_lines = []
 for ing in validated_ingredients:
@@ -107,6 +125,7 @@ def get_search_terms(ingredients: IngredientList, max_terms=2) -> list[str]:
     return terms[:max_terms]
 
 search_terms = get_search_terms(extracted)
+print(f"Searching database for recipes with: {', '.join(search_terms)}")
 meals = search_multiple(search_terms)
 
 # Format all meals as context
@@ -127,7 +146,10 @@ Recipe {i}: {meal['name']}
 db_context = format_db_context(meals)
 print(f"Found {len(meals)} reference recipes from database")
 
-# ── Step 4: Recipe Generation ──────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════
+# Step 4: Generate Recipe
+# ═══════════════════════════════════════════════════════════════════════════
+
 RECIPE_PROMPT = """You are a helpful and creative recipe suggestion assistant.
 RULES:
 1. Suggest one recipe based on the following list of ingredients.

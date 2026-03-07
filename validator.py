@@ -27,7 +27,7 @@ load_dotenv()
 # ═══════════════════════════════════════════════════════════════════════════
 
 CONFIDENCE_THRESHOLD = 0.7  # Only use ingredients with confidence >= 0.7
-IMAGE_PATH = 'foodImages/spaghetti-ingredients.jpg'
+IMAGE_PATH = 'foodImages/easy/burger.jpg'
 
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
@@ -46,7 +46,17 @@ class IngredientList(BaseModel):
     ingredients: list[Ingredient]
     non_food_items_detected: bool
 
-def extract_ingredients(image_path: str, max_retries: int = 3) -> IngredientList:
+def get_mime_type(image_path: str) -> str:
+    ext = os.path.splitext(image_path)[1].lower()
+    mime_types = {
+        ".jpg":  "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png":  "image/png",
+        ".webp": "image/webp",
+    }
+    return mime_types.get(ext, "image/jpg")
+
+def extract_ingredients(image_path: str, max_retries: int = 3) -> IngredientList: # pyright: ignore[reportReturnType]
     """Extract ingredients from image with confidence scores."""
     with open(image_path, 'rb') as f:
         image_bytes = f.read()
@@ -65,14 +75,14 @@ RULES (strictly enforced):
     for attempt in range(max_retries):
         try:
             response = client.models.generate_content(
-                model='gemini-3-flash-preview',
+                model='gemini-2.5-flash',
                 config=types.GenerateContentConfig(
                     system_instruction=EXTRACTION_PROMPT,
                     response_mime_type='application/json',
                     response_schema=IngredientList,
                 ),
                 contents=[
-                    types.Part.from_bytes(data=image_bytes, mime_type='image/jpeg'),
+                    types.Part.from_bytes(data=image_bytes, mime_type=get_mime_type(image_path)),
                     'Extract only food ingredients visible in this image with confidence scores. Be conservative — if unsure, exclude it or assign low confidence.'
                 ]
             )
@@ -107,7 +117,7 @@ def filter_by_confidence(ingredient_list: IngredientList, threshold: float = 0.7
 # Step 3: Generate Recipe
 # ═══════════════════════════════════════════════════════════════════════════
 
-def generate_recipe(ingredients: List[Ingredient], max_retries: int = 3) -> str:
+def generate_recipe(ingredients: List[Ingredient], max_retries: int = 3) -> str: # pyright: ignore[reportReturnType]
     """Generate recipe based on validated ingredients."""
     
     if len(ingredients) == 0:
@@ -159,7 +169,7 @@ RULES:
     for attempt in range(max_retries):
         try:
             recipe_response = client.models.generate_content(
-                model='gemini-3-flash-preview',
+                model='gemini-2.5-flash',
                 config=types.GenerateContentConfig(
                     system_instruction=RECIPE_PROMPT,
                     response_mime_type='text/plain',
