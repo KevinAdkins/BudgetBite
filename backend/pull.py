@@ -102,6 +102,15 @@ def run_search(meal_query):
 
     return None
 
+def search_multiple(queries: list[str]) -> list[dict]:
+    """Search for multiple meals and return all results."""
+    results = []
+    for query in queries:
+        meal = run_search(query)
+        if meal:
+            results.append(meal)
+    return results
+
 def fetch_and_save_meal(meal_query):
     """Backward-compatible wrapper around run_search."""
     return run_search(meal_query)

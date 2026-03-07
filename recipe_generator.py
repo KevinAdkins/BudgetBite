@@ -3,7 +3,7 @@ from google.genai import types
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
-from backend.pull import run_search 
+from backend.pull import search_multiple
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -11,7 +11,7 @@ load_dotenv()  # Load environment variables from .env file
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
 #Image to be processed - Change this path to test with different images in the foodImages folder
-img = 'foodImages/dogImage.jpeg'
+img = 'foodImages/spaghetti-ingredients.jpg'
 
 # ── Step 1: Ingredient Extraction ──────────────────────────────────────────
 class Ingredient(BaseModel):
@@ -75,31 +75,36 @@ for ing in extracted.ingredients:
 ingredient_text = "\n".join(ingredient_lines)
 
 # ── Step 3: Fetch similar recipe from database for context ─────────────────
-# Search DB using the best matching ingredient
-def get_best_search_term(ingredients: IngredientList) -> str:
+# Search using top ingredients from the image
+def get_search_terms(ingredients: IngredientList, max_terms=2) -> list[str]:
     priority = ["protein", "vegetable", "grain"]
+    terms = []
     for category in priority:
         match = next((i for i in ingredients.ingredients if i.category == category), None)
         if match:
-            return match.name
-    return ingredients.ingredients[0].name if ingredients.ingredients else ""
+            terms.append(match.name)
+    return terms[:max_terms]
 
-search_term = get_best_search_term(extracted)
-meal = run_search(search_term)
+search_terms = get_search_terms(extracted)
+meals = search_multiple(search_terms)
 
-if meal:
-    db_context = f"""
-Here is a similar recipe from our database for reference:
-Name: {meal['name']}
-Category: {meal['category']}
-Ingredients: {meal['ingredients']}
-Instructions: {meal['instructions']}
+# Format all meals as context
+def format_db_context(meals: list[dict]) -> str:
+    if not meals:
+        return ""
+    
+    context = "Here are similar recipes from our database for reference:\n"
+    for i, meal in enumerate(meals, 1):
+        context += f"""
+Recipe {i}: {meal['name']}
+  Category: {meal['category']}
+  Ingredients: {meal['ingredients']}
+  Instructions: {meal['instructions']}
 """
-else:
-    db_context = ""
+    return context
 
-print("Database context for recipe generation:")
-print(db_context.strip() if db_context else "No similar recipe found in database.\n")
+db_context = format_db_context(meals)
+print(f"Found {len(meals)} reference recipes from database")
 
 # ── Step 4: Recipe Generation ──────────────────────────────────────────────
 RECIPE_PROMPT = """You are a helpful and creative recipe suggestion assistant.
