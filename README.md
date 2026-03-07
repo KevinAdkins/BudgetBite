@@ -55,8 +55,11 @@ You can test if the backend is working by visiting these endpoints in your brows
 - `http://localhost:5000/` - API information
 - `http://localhost:5000/api/meals` - View all meals (pls let me know if it works)
 
-### 4. Frontend Setup
-*Coming soon - tbd*
+### 4. Genimi API Setup
+Create a .env file
+```bash
+GEMINI_API_KEY=your-api-key
+```
 
 ## API Endpoints
 The backend provides the following endpoints:

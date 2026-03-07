@@ -1,6 +1,0 @@
-# Backend
-Flask
-# Gemini API Client
-google-genai
-# For environment variable management
-python-dotenv
