@@ -87,5 +87,198 @@ Make sure you're in the `backend` directory and have activated your virtual envi
 pip install -r requirements.txt
 ```
 
+### Gemini API Quota Exceeded
+**Error**: `429 RESOURCE_EXHAUSTED - Quota exceeded`
+
+The free tier of Gemini API has limits:
+- **gemini-3-flash**: 20 requests per day
+- **gemini-2.5-flash**: 1500 requests per day (higher limit!)
+
+**Solutions:**
+
+1. **Switch to gemini-2.5-flash** (recommended):
+   ```bash
+   # Edit src/ingredient_extractor.py and src/recipe_generator.py
+   # Change model='gemini-3-flash-preview' to model='gemini-2.5-flash'
+   ```
+
+2. **Wait and retry** (free tier resets daily):
+   - Wait 1 minute and run: `./demo.sh Nichi-Fridge.jpg`
+
+3. **Run partial demo** (skip AI generation):
+   ```bash
+   # Steps 1-2 work without hitting limits
+   python src/ingredient_extractor.py Nichi-Fridge.jpg ingredients.json
+   python src/retrieval.py ingredients.json matched_recipes.json
+   
+   # View the matched recipes
+   cat matched_recipes.json | python -m json.tool
+   ```
+
+4. **Use existing output files**:
+   If Steps 1-2 completed, you already have:
+   - `ingredients.json` - extracted ingredients
+   - `matched_recipes.json` - recipes from database that match your ingredients
+   
+   View the top matches:
+   ```bash
+   python -c "import json; data=json.load(open('matched_recipes.json')); print('\n'.join([f'{i+1}. {r[\"name\"]} - {r[\"match_score\"][\"percentage\"]}% match' for i,r in enumerate(data[:5])]))"
+   ```
+
+## 🎬 Complete Workflow Demo
+
+BudgetBite includes a complete end-to-end demo that showcases the full pipeline from fridge image to validated recipe.
+
+### Demo Workflow
+
+```
+📸 Fridge Image → 🔍 Extract Ingredients → 🗄️ Match Recipes → 🤖 Generate Recipe → ✅ Validate
+```
+
+### Prerequisites for Demo
+
+1. **Backend server must be running** (see Backend Setup above)
+2. **Install additional dependencies**:
+   ```bash
+   pip install google-genai python-dotenv requests pydantic
+   ```
+3. **Create `.env` file** with your Gemini API key:
+   ```bash
+   echo "GEMINI_API_KEY=your_key_here" > .env
+   ```
+
+### Running the Complete Demo
+
+Run the automated demo script:
+```bash
+chmod +x demo.sh
+./demo.sh Nichi-Fridge.jpg
+```
+
+Replace `Nichi-Fridge.jpg` with the path to your fridge image.
+
+### Demo Steps Explained
+
+#### Step 1: Ingredient Extraction
+Analyzes your fridge image and extracts all visible food items:
+```bash
+python src/ingredient_extractor.py <image> ingredients.json
+```
+**Output:** `ingredients.json` - Structured list of detected ingredients
+
+#### Step 2: Recipe Retrieval
+Queries the backend database and matches ingredients to available recipes:
+```bash
+python src/retrieval.py ingredients.json matched_recipes.json
+```
+**Output:** `matched_recipes.json` - Ranked list of matching recipes with scores
+
+#### Step 3: Recipe Generation
+Uses AI to generate a creative recipe based on your ingredients:
+```bash
+python src/recipe_generator.py matched_recipes.json generated_recipe.txt
+```
+**Output:** `generated_recipe.txt` - Complete recipe with instructions
+
+#### Step 4: Recipe Validation
+Validates that the generated recipe only uses detected ingredients:
+```bash
+python src/validator.py ingredients.json generated_recipe.txt
+```
+**Output:** Console report showing validation results
+
+### Manual Testing
+
+If you prefer to run steps individually:
+
+```bash
+# 1. Extract ingredients
+python src/ingredient_extractor.py Nichi-Fridge.jpg ingredients.json
+
+# 2. Match recipes from database
+python src/retrieval.py ingredients.json matched_recipes.json
+
+# 3. Generate creative recipe
+python src/recipe_generator.py matched_recipes.json generated_recipe.txt
+
+# 4. Validate recipe
+python src/validator.py ingredients.json generated_recipe.txt
+```
+
+### View Results
+
+```bash
+# View extracted ingredients
+cat ingredients.json | python -m json.tool
+
+# View matched recipes
+cat matched_recipes.json | python -m json.tool
+
+# View generated recipe
+cat generated_recipe.txt
+```
+
+### Demo Tips for Presentation
+
+1. Start with backend server running in one terminal
+2. Show the fridge image to your audience
+3. Run `./demo.sh` with the image path
+4. Watch as each step completes with colored output
+5. Review the generated files and validation results
+6. Show how recipes from database influenced the AI generation
+
+### Testing Backend API Directly
+
+```bash
+# Get all meals
+curl http://localhost:5000/api/meals
+
+# Search for specific ingredient
+curl "http://localhost:5000/api/meals/search?name=chicken"
+
+# Get specific recipe
+curl http://localhost:5000/api/meals/spaghetti
+```
+
+### Demo Architecture
+
+```
+┌─────────────┐
+│ Fridge      │
+│ Image       │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐      ┌──────────────┐
+│ Gemini AI   │─────▶│ ingredients  │
+│ Extractor   │      │   .json      │
+└─────────────┘      └──────┬───────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │  Backend API │
+                     │ (localhost:  │
+                     │   5000)      │
+                     └──────┬───────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │   matched    │
+                     │  _recipes    │
+                     └──────┬───────┘
+                            │
+                            ▼
+┌─────────────┐      ┌──────────────┐
+│ Gemini AI   │─────▶│  generated   │
+│ Generator   │      │  _recipe.txt │
+└─────────────┘      └──────┬───────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │  Validation  │
+                     │   Report     │
+                     └──────────────┘
+```
+
 # Latest Docs
 [Our Documents & Slides](https://github.com/KevinAdkins/BudgetBite/tree/main/docs)

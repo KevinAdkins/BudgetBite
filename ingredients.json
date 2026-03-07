@@ -1,0 +1,131 @@
+{
+  "ingredients": [
+    {
+      "name": "broccoli",
+      "quantity": "2",
+      "unit": "portions",
+      "category": "produce"
+    },
+    {
+      "name": "potato",
+      "quantity": "1",
+      "unit": "portion",
+      "category": "produce"
+    },
+    {
+      "name": "pasta",
+      "quantity": "1",
+      "unit": "container",
+      "category": "grains"
+    },
+    {
+      "name": "queso dip",
+      "quantity": "1",
+      "unit": "tub",
+      "category": "dairy & alternatives"
+    },
+    {
+      "name": "tzatziki dip",
+      "quantity": "1",
+      "unit": "tub",
+      "category": "dairy & alternatives"
+    },
+    {
+      "name": "raspberries",
+      "quantity": "2",
+      "unit": "containers",
+      "category": "fruit"
+    },
+    {
+      "name": "apple juice",
+      "quantity": "1",
+      "unit": "bottle",
+      "category": "beverages"
+    },
+    {
+      "name": "eggs",
+      "quantity": "1.5",
+      "unit": "cartons",
+      "category": "dairy & proteins"
+    },
+    {
+      "name": "mango",
+      "quantity": "2",
+      "unit": "containers",
+      "category": "fruit"
+    },
+    {
+      "name": "green grapes",
+      "quantity": "1",
+      "unit": "bunch",
+      "category": "fruit"
+    },
+    {
+      "name": "kalamata olives",
+      "quantity": "1",
+      "unit": "jar",
+      "category": "pantry"
+    },
+    {
+      "name": "pickles",
+      "quantity": "1",
+      "unit": "jar",
+      "category": "pantry"
+    },
+    {
+      "name": "guacamole",
+      "quantity": "4",
+      "unit": "cups",
+      "category": "produce"
+    },
+    {
+      "name": "spinach",
+      "quantity": "1",
+      "unit": "tub",
+      "category": "produce"
+    },
+    {
+      "name": "white mushrooms",
+      "quantity": "1",
+      "unit": "package",
+      "category": "produce"
+    },
+    {
+      "name": "green beans",
+      "quantity": "1",
+      "unit": "bag",
+      "category": "produce"
+    },
+    {
+      "name": "carrot",
+      "quantity": "1",
+      "unit": "item",
+      "category": "produce"
+    },
+    {
+      "name": "green bell pepper",
+      "quantity": "1",
+      "unit": "item",
+      "category": "produce"
+    },
+    {
+      "name": "orange",
+      "quantity": "1",
+      "unit": "item",
+      "category": "fruit"
+    },
+    {
+      "name": "cucumber",
+      "quantity": "1",
+      "unit": "item",
+      "category": "produce"
+    },
+    {
+      "name": "cabbage",
+      "quantity": "1",
+      "unit": "portion",
+      "category": "produce"
+    }
+  ],
+  "non_food_items_detected": true
+}
