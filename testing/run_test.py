@@ -1,4 +1,4 @@
-from test_cases import TEST_CASES
+from testing.test_cases import TEST_CASES
 from validator import extract_ingredients  
 from validator import generate_recipe          
 from rapidfuzz import fuzz
