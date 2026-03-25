@@ -69,13 +69,13 @@ For each image:
 ```json
 {
   "image": "fridge_001.jpg",
-  "ground_truth": ["apple", "carrot", "milk"],
-  "ai_extracted": ["apple", "carrot", "orange"],
-  "matches": ["apple", "carrot"],
-  "false_positives": ["orange"],
-  "false_negatives": ["milk"],
-  "precision": 0.67,
-  "recall": 0.67,
-  "f1_score": 0.67
+  "ground_truth": ["apple"],
+  "ai_extracted": ["apple"],
+  "matches": ["apple"],
+  "false_positives": [""],
+  "false_negatives": [""],
+  "precision": 1,
+  "recall": 1,
+  "f1_score": 1
 }
 ```
