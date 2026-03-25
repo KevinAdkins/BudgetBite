@@ -213,7 +213,7 @@ Your repository must reflect a clean MVP path.
 
 ---
 
-# 5. Required Live Demo
+# 5. Required Live Demo Video
 
 In class, your team must demonstrate:
 
