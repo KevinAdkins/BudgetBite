@@ -44,7 +44,8 @@ def estimate_kroger_cost(
 
 def normalize_generated_ingredient(line: str) -> str:
     """Strip bullets and quantity phrases to improve store product matching."""
-    text = line.strip().lstrip("*- ")
+    text = line.strip()
+    text = re.sub(r"^[\u2022\u00b7\*-]\s*", "", text)
     text = re.sub(r"\([^)]*\)", "", text).strip()
     text = re.sub(r"^\*+|\*+$", "", text).strip()
     text = re.sub(
@@ -87,7 +88,7 @@ def extract_ingredients_from_recipe_text(recipe_text: str) -> list[str]:
         ):
             break
 
-        if collecting and (line.startswith("*") or line.startswith("-") or re.match(r"^\d+[\.)]", line)):
+        if collecting and (line.startswith(("*", "-", "•", "·")) or re.match(r"^\d+[\.)]", line)):
             name = normalize_generated_ingredient(line)
             if name and not re.search(
                 r"\b(recipe name|description|step|preparation steps|instruction|direction)\b",
@@ -99,7 +100,7 @@ def extract_ingredients_from_recipe_text(recipe_text: str) -> list[str]:
     if not extracted_names:
         for raw in lines:
             line = raw.strip()
-            if line.startswith("*") or line.startswith("-"):
+            if line.startswith(("*", "-", "•", "·")):
                 name = normalize_generated_ingredient(line)
                 if name and not re.search(
                     r"\b(recipe name|description|step|preparation steps|instruction|direction)\b",
@@ -146,6 +147,15 @@ def filter_pricing_ingredients(ingredients: list[str]) -> list[str]:
 def parse_csv_ingredients(raw: str) -> list[str]:
     """Parse comma-separated ingredient values into a list."""
     return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+def get_pricing_tier(total: float) -> str:
+    """Classify total cost into cheap, medium, or expensive tiers."""
+    if total < 25:
+        return "cheap"
+    if total <= 50:
+        return "medium"
+    return "expensive"
 
 
 def load_recipe_text(recipe_file: str) -> str:
@@ -220,11 +230,20 @@ def main() -> int:
         return 2
 
     print("\n[KROGER PRICING RESULT]")
+    estimated_total = pricing.get("estimatedTotal")
     print(f"Priced Count: {pricing.get('pricedCount')} / {pricing.get('requestedCount')}")
-    print(f"Estimated Total: ${pricing.get('estimatedTotal')}")
+    print(f"Estimated Total: ${estimated_total}")
     print(f"Location: {pricing.get('locationId')} ({pricing.get('zipCode')})")
     if pricing.get("missingIngredients"):
         print(f"Missing: {', '.join(pricing['missingIngredients'])}")
+
+    tier = "unknown"
+    if estimated_total is not None:
+        try:
+            tier = get_pricing_tier(float(estimated_total))
+        except (TypeError, ValueError):
+            tier = "unknown"
+    print(f"Tier: {tier}")
 
     return 0
 

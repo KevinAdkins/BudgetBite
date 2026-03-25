@@ -101,7 +101,7 @@ echo "STEP 3: Generate Creative Recipe"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo -e "${NC}"
 
-python src/recipe_generator.py "$MATCHED_RECIPES" "$GENERATED_RECIPE"
+python src/recipe_generator.py "$MATCHED_RECIPES" "$GENERATED_RECIPE" --ingredients-file "$INGREDIENTS_OUTPUT"
 STEP3_EXIT=$?
 
 if [ $STEP3_EXIT -ne 0 ] || [ ! -f "$GENERATED_RECIPE" ]; then
