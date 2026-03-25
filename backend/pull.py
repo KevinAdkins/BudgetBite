@@ -94,6 +94,7 @@ def run_search(meal_query):
     except requests.RequestException as e:
         import logging
         logging.warning(f"API request failed for meal '{query}': {e}")
+        return None
 
     if res.get('meals'):
         meal_data = format_meal_data(res['meals'][0])
@@ -114,3 +115,73 @@ def search_multiple(queries: list[str]) -> list[dict]:
 def fetch_and_save_meal(meal_query):
     """Backward-compatible wrapper around run_search."""
     return run_search(meal_query)
+
+
+def get_full_meal_by_id(meal_id: str):
+    """Fetch full meal details from TheMealDB by meal ID."""
+    lookup_id = (meal_id or "").strip()
+    if not lookup_id:
+        return None
+
+    try:
+        url = "https://www.themealdb.com/api/json/v1/1/lookup.php"
+        response = requests.get(url, params={"i": lookup_id}, timeout=API_TIMEOUT)
+        response.raise_for_status()
+        payload = response.json()
+    except requests.RequestException:
+        return None
+
+    meals = payload.get("meals") or []
+    if not meals:
+        return None
+
+    meal = meals[0]
+
+    # Cache the important fields in local DB for faster subsequent lookup.
+    try:
+        init_db()
+        save_to_db(format_meal_data(meal))
+    except Exception:
+        pass
+
+    return meal
+
+
+def search_by_main_ingredient(ingredient: str, full_details: bool = False, first_only: bool = False):
+    """
+    Search meals by a main ingredient.
+
+    - full_details=False: returns `filter.php` meal summaries.
+    - full_details=True: expands each result via `lookup.php` for full meal objects.
+    - first_only=True: only returns the first match (summary or full details based on full_details).
+    """
+    ingredient_query = (ingredient or "").strip()
+    if not ingredient_query:
+        return []
+
+    try:
+        url = "https://www.themealdb.com/api/json/v1/1/filter.php"
+        response = requests.get(url, params={"i": ingredient_query}, timeout=API_TIMEOUT)
+        response.raise_for_status()
+        payload = response.json()
+    except requests.RequestException:
+        return []
+
+    meals = payload.get("meals") or []
+    if not meals:
+        return []
+
+    if first_only:
+        meals = meals[:1]
+
+    if not full_details:
+        return meals
+
+    full_meals = []
+    for meal in meals:
+        meal_id = meal.get("idMeal")
+        detailed = get_full_meal_by_id(meal_id)
+        if detailed:
+            full_meals.append(detailed)
+
+    return full_meals

@@ -32,6 +32,31 @@ def search_meal():
         return jsonify({"error": "Meal not found in database or API"}), 404
 
 
+@meal_bp.route('/meals/search-by-ingredient', methods=['GET'])
+def search_meal_by_ingredient():
+    """Search meals by ingredient, with optional full details lookup."""
+    ingredient = (request.args.get('ingredient') or '').strip()
+    if not ingredient:
+        return jsonify({"error": "No ingredient provided"}), 400
+
+    full_details = (request.args.get('full') or '').strip().lower() in {'1', 'true', 'yes'}
+    first_only = (request.args.get('first') or '').strip().lower() in {'1', 'true', 'yes'}
+
+    meals = pull.search_by_main_ingredient(
+        ingredient=ingredient,
+        full_details=full_details,
+        first_only=first_only
+    )
+
+    if not meals:
+        return jsonify({"error": f"No meals found for ingredient '{ingredient}'"}), 404
+
+    if first_only:
+        return jsonify({"meal": meals[0], "count": 1}), 200
+
+    return jsonify({"meals": meals, "count": len(meals)}), 200
+
+
 @meal_bp.route('/meals/<string:name>', methods=['GET'])
 def get_meal(name):
     """Get a specific meal by name."""
