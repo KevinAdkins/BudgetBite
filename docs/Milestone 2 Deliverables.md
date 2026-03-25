@@ -34,6 +34,7 @@ By Milestone 2, your team must demonstrate an MVP that supports:
 6. Refusal when ingredients are insufficient for a coherent recipe
 7. Budget check on the final recipe
 8. Regeneration or fallback when the recipe exceeds the selected budget tier
+9. Minimum functioning GUI
 
 This milestone is about **integration and reliability**, not adding unrelated features.
 
