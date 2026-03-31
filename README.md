@@ -50,6 +50,38 @@ The backend API will start running at `http://localhost:5000`
 
 You should see a message indicating the Flask server is running.
 
+### Frontend Setup
+
+````bash
+cd frontend
+```bash
+
+### Configure Your Network IP
+
+Find your local IP address:
+```bash
+ipconfig on Windows
+Look for IPv4 Address for your IP
+````
+
+In `frontend/app/(tabs)/camera.tsx`, replace the backend URL with your IP:
+
+```tsx
+const res = await fetch("http://YOUR_LOCAL_IP:5001/api/analyze", {
+```
+
+#### Start the Frontend
+
+```bash
+npx expo start --web
+```
+
+If your phone can't connect run:
+
+```bash
+npx expo start --web --host tunnel
+```
+
 ### 3. Test the API
 You can test if the backend is working by visiting these endpoints in your browser:
 - `http://localhost:5000/` - API information
