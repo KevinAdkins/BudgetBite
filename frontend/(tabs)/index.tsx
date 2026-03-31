@@ -1,8 +1,20 @@
-import { Text, View, StyleSheet, StatusBar } from "react-native";
-import { Link } from "expo-router";
+import { Text, View, StyleSheet, FlatList, Pressable } from "react-native";
+import { useEffect, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
+import { pantryStore } from "./pantryStore";
 
-export default function Index() {
+const ACCENT = "#4ade80";
+
+export default function PantryScreen() {
+  const [items, setItems] = useState(pantryStore.getItems());
+
+  useEffect(() => {
+    const unsub = pantryStore.subscribe(() =>
+      setItems([...pantryStore.getItems()]),
+    );
+    return unsub;
+  }, []);
+
   return (
     <LinearGradient
       colors={["#0f0c29", "#1a1a40", "#0d0d1a"]}
@@ -10,26 +22,40 @@ export default function Index() {
       start={{ x: 0.2, y: 0 }}
       end={{ x: 0.8, y: 1 }}
     >
-      <StatusBar barStyle="light-content" />
-      <View style={styles.logoArea}>
-        <Text style={styles.logoEmoji}>🛒</Text>
-        <Text style={styles.logoText}>BudgetBite</Text>
-        <Text style={styles.tagline}>Smart shopping, simplified.</Text>
-      </View>
-      <View style={styles.cardArea}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Get Started</Text>
-          <Text style={styles.cardSubtext}>
-            Scan barcodes and track your pantry in real time.
-          </Text>
-          <Link href="/camera" style={styles.button}>
-            <Text style={styles.buttonText}>📷 Start Scanning</Text>
-          </Link>
-          <Link href="/pantry" style={styles.outlineButton}>
-            <Text style={styles.outlineButtonText}>🧊 View Pantry</Text>
-          </Link>
+      <Text style={styles.title}>My Pantry</Text>
+      <Text style={styles.subtitle}>
+        {items.length} item{items.length !== 1 ? "s" : ""}
+      </Text>
+      {items.length === 0 ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyIcon}>🧊</Text>
+          <Text style={styles.emptyText}>Your pantry is empty</Text>
+          <Text style={styles.emptySubtext}>Take a photo to get started!</Text>
         </View>
-      </View>
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ padding: 16, gap: 12 }}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <View style={styles.cardLeft}>
+                <Text style={styles.cardType}>{item.type.toUpperCase()}</Text>
+                <Text style={styles.cardData} numberOfLines={1}>
+                  {item.data}
+                </Text>
+                <Text style={styles.cardDate}>{item.addedAt}</Text>
+              </View>
+              <Pressable
+                onPress={() => pantryStore.removeItem(item.id)}
+                style={styles.deleteBtn}
+              >
+                <Text style={styles.deleteText}>✕</Text>
+              </Pressable>
+            </View>
+          )}
+        />
+      )}
     </LinearGradient>
   );
 }
@@ -37,83 +63,73 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "space-between",
-    paddingVertical: 60,
   },
-  logoArea: {
-    alignItems: "center",
-    paddingTop: 40,
-    gap: 8,
-  },
-  logoEmoji: {
-    fontSize: 56,
-  },
-  logoText: {
-    fontSize: 36,
+  title: {
+    fontSize: 28,
     fontWeight: "800",
     color: "#fff",
-    letterSpacing: 1,
+    paddingHorizontal: 20,
+    paddingTop: 24,
   },
-  tagline: {
+  subtitle: {
+    fontSize: 13,
+    color: "#555",
+    paddingHorizontal: 20,
+    marginBottom: 8,
+    marginTop: 2,
+  },
+  empty: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  emptyIcon: {
+    fontSize: 52,
+  },
+  emptyText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  emptySubtext: {
+    color: "#555",
     fontSize: 14,
-    color: "#888",
-    letterSpacing: 0.5,
-  },
-  cardArea: {
-    paddingHorizontal: 24,
   },
   card: {
     backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: 24,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-    gap: 12,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#fff",
-    marginBottom: 4,
-  },
-  cardSubtext: {
-    fontSize: 14,
-    color: "#888",
-    marginBottom: 8,
-    lineHeight: 20,
-  },
-  button: {
-    backgroundColor: "#4ade80",
-    paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
+    padding: 16,
+    flexDirection: "row",
     alignItems: "center",
-    textAlign: "center",
-    color: "#000",
-    fontWeight: "700",
-    fontSize: 15,
-    overflow: "hidden",
-    paddingHorizontal: 20,
-  },
-  buttonText: {
-    color: "#000",
-    fontWeight: "700",
-    fontSize: 15,
-    textAlign: "center",
-  },
-  outlineButton: {
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    textAlign: "center",
+    justifyContent: "space-between",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.15)",
-    paddingHorizontal: 20,
+    borderColor: "rgba(255,255,255,0.07)",
   },
-  outlineButtonText: {
+  cardLeft: {
+    flex: 1,
+    gap: 4,
+  },
+  cardType: {
+    color: ACCENT,
+    fontSize: 11,
+    fontWeight: "bold",
+    letterSpacing: 1,
+  },
+  cardData: {
     color: "#fff",
+    fontSize: 16,
     fontWeight: "600",
-    fontSize: 15,
-    textAlign: "center",
+  },
+  cardDate: {
+    color: "#444",
+    fontSize: 12,
+  },
+  deleteBtn: {
+    padding: 8,
+  },
+  deleteText: {
+    color: "#555",
+    fontSize: 16,
   },
 });
-
