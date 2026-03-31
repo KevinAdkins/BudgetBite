@@ -1,16 +1,4 @@
----
 
-# 🧪 MVP Test Cases – Recipe System
-
-## 📌 Overview
-
-* **Project:**
-* **Date:**
-* **Tester:**
-* **Model-Version:**
-* **Notes:**
-
----
 
 ## ✅ Successful Recipe Cases (4)
 
