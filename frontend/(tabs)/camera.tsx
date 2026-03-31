@@ -29,6 +29,7 @@ export default function Camera() {
   } | null>(null);
   const [added, setAdded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [addedIngredients, setAddedIngredients] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<{
     ingredients: { name: string; category: string }[];
     matched_recipes: { name: string; match_score: { percentage: number } }[];
@@ -138,7 +139,7 @@ export default function Camera() {
         reader.readAsDataURL(blob);
       });
 
-      const res = await fetch("http://YOUR_LOCAL_HOST_IP:5001/api/analyze", {
+      const res = await fetch("http://192.168.1.x:5001/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: base64 }),
@@ -169,6 +170,7 @@ export default function Camera() {
             onPress={() => {
               setUri(null);
               setAnalysisResult(null);
+              setAddedIngredients(false);
             }}
           >
             <Text style={styles.previewBtnText}>📷 Retake</Text>
@@ -183,7 +185,7 @@ export default function Camera() {
             disabled={analyzing}
           >
             <Text style={[styles.previewBtnText, { color: "#000" }]}>
-              {analyzing ? "🤖 Analyzing..." : "🤖 Analyze Food"}
+              {analyzing ? "⏳ Analyzing..." : "🤖 Analyze Food"}
             </Text>
           </Pressable>
         </View>
@@ -219,11 +221,33 @@ export default function Camera() {
               </View>
             ))
           )}
+          <View style={styles.resultButtons}>
+            <Pressable
+              style={[
+                styles.addButton,
+                addedIngredients && styles.addButtonDone,
+              ]}
+              onPress={() => {
+                if (addedIngredients) return;
+                analysisResult.ingredients.forEach((ing) => {
+                  pantryStore.addItem(ing.category, ing.name);
+                });
+                setAddedIngredients(true);
+              }}
+            >
+              <Text style={styles.addButtonText}>
+                {addedIngredients
+                  ? "✓ Added to Pantry!"
+                  : "Add Ingredients to Pantry"}
+              </Text>
+            </Pressable>
+          </View>
           <Pressable
-            style={styles.previewBtn}
+            style={[styles.previewBtn, { marginTop: 8 }]}
             onPress={() => {
               setUri(null);
               setAnalysisResult(null);
+              setAddedIngredients(false);
             }}
           >
             <Text style={styles.previewBtnText}>📷 Take Another</Text>
@@ -265,12 +289,10 @@ export default function Camera() {
           }}
         />
 
-        {/* '...' menu button top right */}
         <Pressable style={styles.menuBtn} onPress={() => setMenuOpen(true)}>
           <Text style={styles.menuBtnText}>•••</Text>
         </Pressable>
 
-        {/* Barcode scan overlay */}
         {scanMode && (
           <View style={styles.scanOverlay}>
             <View style={styles.scanBox}>
@@ -301,7 +323,6 @@ export default function Camera() {
           </View>
         )}
 
-        {/* Bottom controls */}
         {!scanMode && (
           <View style={styles.shutterContainer}>
             <Pressable onPress={toggleFacing}>
@@ -320,7 +341,6 @@ export default function Camera() {
           </View>
         )}
 
-        {/* Scan result card */}
         {scanResult && (
           <Animated.View
             style={[
@@ -359,7 +379,6 @@ export default function Camera() {
           </Animated.View>
         )}
 
-        {/* '...' dropdown modal */}
         <Modal
           transparent
           visible={menuOpen}
