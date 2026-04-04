@@ -41,14 +41,22 @@ def analyze_image():
         if not data or 'image' not in data:
             return jsonify({"error": "No image provided"}), 400
 
+        budget_tier = data.get('budget_tier', 'tier1')
+        budget_labels = {
+            'tier1': 'less than $25 (budget-friendly, cheap ingredients)',
+            'tier2': 'between $25 and $50 (moderate budget)',
+            'tier3': 'greater than $50 (premium ingredients allowed)'
+        }
+        budget_description = budget_labels.get(budget_tier, 'less than $25')
+
         # Decode base64 image to temp file
         image_data = base64.b64decode(data['image'])
         with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp:
             tmp.write(image_data)
             tmp_path = tmp.name
 
-        # Extract ingredients via Gemini
-        result = extract_ingredients(tmp_path)
+        # Step 1: Extract ingredients via Gemini
+        result = extract_ingredients(tmp_path, budget_description)
         os.unlink(tmp_path)
 
         ingredients = [
@@ -61,7 +69,7 @@ def analyze_image():
             for ing in result.ingredients
         ]
 
-        # Match to recipes in DB
+        # Step 2: Match to recipes in DB
         meals = get_all_meals()
         matches = match_ingredients_to_meals(ingredients, meals)
 
