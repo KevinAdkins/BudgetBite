@@ -148,7 +148,7 @@ export default function Camera() {
         reader.readAsDataURL(blob);
       });
 
-      const res = await fetch("http://192.168.1.204:5001/api/analyze", {
+      const res = await fetch("http://192.168.1.x:5001/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: base64, budget_tier: tier }),
