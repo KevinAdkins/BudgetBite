@@ -11,6 +11,15 @@ API_TIMEOUT = 10
 DEFAULT_KROGER_BASE_URL = "https://api-ce.kroger.com"
 DEFAULT_KROGER_SCOPE = "product.compact"
 DEFAULT_PRICE_STRATEGY = "average_top3"
+ALLOWED_PRICE_STRATEGIES = ("average_top3", "cheapest", "first")
+
+
+def normalize_price_strategy(strategy: str | None) -> str:
+    """Normalize strategy values and fallback to default when invalid."""
+    normalized = (strategy or "").strip().lower()
+    if normalized in ALLOWED_PRICE_STRATEGIES:
+        return normalized
+    return DEFAULT_PRICE_STRATEGY
 
 
 def _normalize_ingredient(term: str) -> str:
@@ -67,7 +76,7 @@ def _select_price(candidates: list[dict], strategy: str) -> tuple[float, dict] |
     if not candidates:
         return None
 
-    normalized_strategy = (strategy or "").strip().lower() or DEFAULT_PRICE_STRATEGY
+    normalized_strategy = normalize_price_strategy(strategy)
     if normalized_strategy == "first":
         chosen = candidates[0]
         return round(chosen["price"], 2), chosen
@@ -233,7 +242,7 @@ def get_ingredient_price(ingredient: str, location_id: str, token: str, price_st
         "searchTerm": term,
         "found": True,
         "price": selected_price,
-        "selectionStrategy": (price_strategy or DEFAULT_PRICE_STRATEGY),
+        "selectionStrategy": normalize_price_strategy(price_strategy),
         "samplePrices": [round(c["price"], 2) for c in sorted(candidates, key=lambda c: c["price"])[:5]],
         "product": {
             "description": selected_product.get("description"),
@@ -249,6 +258,8 @@ def estimate_ingredient_total(ingredients: list[str], zip_code: str, price_strat
     if not ingredients:
         raise ValueError("ingredients list is required")
 
+    normalized_strategy = normalize_price_strategy(price_strategy)
+
     token = get_access_token()
     location_id = get_location_id(zip_code, token)
 
@@ -257,7 +268,7 @@ def estimate_ingredient_total(ingredients: list[str], zip_code: str, price_strat
     missing = []
 
     for ingredient in ingredients:
-        result = get_ingredient_price(ingredient, location_id, token, price_strategy=price_strategy)
+        result = get_ingredient_price(ingredient, location_id, token, price_strategy=normalized_strategy)
         line_items.append(result)
         if result["found"] and result["price"] is not None:
             subtotal += float(result["price"])
@@ -271,7 +282,7 @@ def estimate_ingredient_total(ingredients: list[str], zip_code: str, price_strat
         "missingIngredients": missing,
         "subtotal": round(subtotal, 2),
         "estimatedTotal": round(subtotal, 2),
-        "priceStrategy": (price_strategy or DEFAULT_PRICE_STRATEGY),
+        "priceStrategy": normalized_strategy,
         "pricedCount": len([i for i in line_items if i["found"]]),
         "requestedCount": len(ingredients),
     }

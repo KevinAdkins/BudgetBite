@@ -28,7 +28,7 @@ class IngredientList(BaseModel):
     non_food_items_detected: bool  # flag if image contains non-food items
 
 
-def extract_ingredients(image_path: str) -> IngredientList:
+def extract_ingredients(image_path: str, budget: str = "less than $25") -> IngredientList:
     """Extract ingredients from an image using Gemini Vision API."""
     
     if not Path(image_path).exists():
@@ -41,7 +41,7 @@ def extract_ingredients(image_path: str) -> IngredientList:
 
     client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
-    SYSTEM_PROMPT = """You are a food ingredient extraction specialist.
+    SYSTEM_PROMPT = """You are a food ingredient extraction specialist. Budget constraint: {budget}
 
 RULES (strictly enforced):
 1. Extract ONLY edible food ingredients visible in the image
@@ -50,6 +50,7 @@ RULES (strictly enforced):
 4. If you cannot confidently identify a food item, skip it
 5. Do NOT infer ingredients that are not visually present
 6. Quantities should reflect what is visible, not recipe amounts
+7. Keep the budget constraint in mind when suggesting recipes
 """
 
     response = client.models.generate_content(
@@ -156,3 +157,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

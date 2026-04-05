@@ -1,8 +1,13 @@
 from flask import Blueprint, request, jsonify
 from models import database
 import pull
+import time
 
 meal_bp = Blueprint('meal_bp', __name__)
+
+# Maintainer note:
+# Search endpoint intentionally checks local DB first (via pull.run_search)
+# and only falls back to the external API when missing to keep latency/cost low.
 
 # --- GET Routes (Order matters: specific routes before wildcards) ---
 
@@ -81,8 +86,23 @@ def create_meal():
         
         # Generate an ID if not provided
         if not data.get('id'):
-            import time
             data['id'] = str(int(time.time() * 1000))
+
+        # Validate/normalize optional pricing fields.
+        if data.get('estimated_price') is not None:
+            try:
+                data['estimated_price'] = round(float(data['estimated_price']), 2)
+                if data['estimated_price'] < 0:
+                    return jsonify({"error": "estimated_price must be >= 0"}), 400
+            except (TypeError, ValueError):
+                return jsonify({"error": "estimated_price must be a valid number"}), 400
+        elif data.get('ingredients'):
+            data['estimated_price'] = pull.estimate_meal_price_from_text(data.get('ingredients'))
+
+        if data.get('estimated_price') is not None:
+            data['currency'] = (data.get('currency') or 'USD').upper()
+            data['price_source'] = data.get('price_source') or 'estimated'
+            data['price_last_updated'] = data.get('price_last_updated') or pull.current_price_timestamp()
         
         database.add_meal(data)
         return jsonify({"message": "Meal added successfully", "meal": data}), 201
