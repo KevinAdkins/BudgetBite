@@ -78,9 +78,21 @@
 
 ## 💸 Budget-Failure Cases (2)
 
-### Test Case 7
+Notes and Comments:
+The pricing is an estimate based on data from the Kroger API. Full-sized grocery items are used when calculating prices. For example, if a recipe calls for 2 eggs, the price of an entire carton of eggs will be returned.
+
+Three different pricing strategies are available:
+
+- Cheapest
+- Average (Top 3)
+- Most Expensive
+
+The total cost will vary depending on the pricing strategy selected by the user.
+
+### Test Case 7 - Cheap Meal
 
 - **Input:**
+  
 - **Normalized Ingredients:**
 - **Retrieved Recipe(s):**
 - **Generated Output Summary:**
@@ -90,7 +102,7 @@
 
 ---
 
-### Test Case 8
+### Test Case 8 - Expensive Meal
 
 - **Input:**
 - **Normalized Ingredients:**
