@@ -40,6 +40,12 @@ The database will be automatically created when you first run the app. To manual
 ```bash
 python (or py) seed.py
 ```
+Seed data is stored in [backend/data/meals_seed.csv](backend/data/meals_seed.csv) so teammates can update rows without hand-writing SQL inserts.
+The CSV includes pricing fields (`estimated_price`, `currency`, `price_source`, `price_last_updated`) so you can share stable seeded prices without calling external APIs.
+To export the latest DB meals back into CSV for teammates, run:
+```bash
+python (or py) backend/seed.py --export-csv
+```
 
 #### Start the Backend Server
 ```bash
