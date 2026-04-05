@@ -2,13 +2,13 @@ import sqlite3
 import os
 from contextlib import contextmanager
 
-# Centralized paths - consistent with pull.py
+# Shared DB location for backend modules.
 BACKEND_DIR = os.path.dirname(os.path.dirname(__file__))
 DB_PATH = os.path.join(BACKEND_DIR, "data", "meals.db")
 
 @contextmanager
 def get_db_connection():
-    """Context manager for database connections - ensures proper cleanup."""
+    """Return a SQLite connection with dict-like rows and guaranteed cleanup."""
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -43,15 +43,22 @@ def add_meal(meal_data):
     """The 'POST' action - adds or updates a full meal entry."""
     with get_db_connection() as conn:
         conn.execute('''
-            INSERT OR REPLACE INTO meals (id, name, category, instructions, ingredients, thumbnail)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT OR REPLACE INTO meals (
+                id, name, category, instructions, ingredients, thumbnail,
+                estimated_price, currency, price_source, price_last_updated
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             meal_data.get('id'),
             meal_data.get('name', '').lower(),
             meal_data.get('category'),
             meal_data.get('instructions'),
             meal_data.get('ingredients'),
-            meal_data.get('thumbnail')
+            meal_data.get('thumbnail'),
+            meal_data.get('estimated_price'),
+            meal_data.get('currency', 'USD'),
+            meal_data.get('price_source'),
+            meal_data.get('price_last_updated')
         ))
         conn.commit()
 
@@ -66,7 +73,16 @@ def update_meal_instructions(name, instructions):
 
 def update_meal(name, updates):
     """Generic update - allows updating multiple fields at once."""
-    valid_fields = ['category', 'instructions', 'ingredients', 'thumbnail']
+    valid_fields = [
+        'category',
+        'instructions',
+        'ingredients',
+        'thumbnail',
+        'estimated_price',
+        'currency',
+        'price_source',
+        'price_last_updated',
+    ]
     set_clause = ', '.join([f"{field} = ?" for field in updates.keys() if field in valid_fields])
     values = [updates[field] for field in updates.keys() if field in valid_fields]
     values.append(name.lower())
