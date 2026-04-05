@@ -29,6 +29,8 @@ IMAGE_PATH="${1:-Nichi-Fridge.jpg}"
 INGREDIENTS_OUTPUT="ingredients.json"
 MATCHED_RECIPES="matched_recipes.json"
 GENERATED_RECIPE="generated_recipe.txt"
+PRICING_API_URL="${PRICING_API_URL:-http://127.0.0.1:5001/api/pricing/ingredients}"
+PRICING_ZIP_CODE="${KROGER_ZIP_CODE:-78201}"
 
 echo -e "${CYAN}"
 echo "═══════════════════════════════════════════════════════════════════"
@@ -99,7 +101,7 @@ echo "STEP 3: Generate Creative Recipe"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo -e "${NC}"
 
-python src/recipe_generator.py "$MATCHED_RECIPES" "$GENERATED_RECIPE"
+python src/recipe_generator.py "$MATCHED_RECIPES" "$GENERATED_RECIPE" --ingredients-file "$INGREDIENTS_OUTPUT"
 STEP3_EXIT=$?
 
 if [ $STEP3_EXIT -ne 0 ] || [ ! -f "$GENERATED_RECIPE" ]; then
@@ -110,20 +112,40 @@ fi
 echo -e "${GREEN}✅ Step 3 complete: Recipe saved to $GENERATED_RECIPE${NC}\n"
 sleep 2
 
-# Step 4: Validate generated recipe
+# Step 4: Estimate Kroger pricing
 echo -e "${MAGENTA}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "STEP 4: Validate Generated Recipe"
+echo "STEP 4: Estimate Kroger Pricing"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo -e "${NC}"
+
+python src/pricing.py \
+    --recipe-file "$GENERATED_RECIPE" \
+    --zip-code "$PRICING_ZIP_CODE" \
+    --api-url "$PRICING_API_URL"
+STEP4_EXIT=$?
+
+if [ $STEP4_EXIT -ne 0 ]; then
+    echo -e "${YELLOW}⚠️  Step 4 completed with warnings (pricing unavailable or partial)${NC}\n"
+else
+    echo -e "${GREEN}✅ Step 4 complete: Kroger pricing estimated${NC}\n"
+fi
+sleep 2
+
+# Step 5: Validate generated recipe
+echo -e "${MAGENTA}"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "STEP 5: Validate Generated Recipe"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo -e "${NC}"
 
 python src/validator.py "$IMAGE_PATH" "$GENERATED_RECIPE"
-STEP4_EXIT=$?
+STEP5_EXIT=$?
 
-if [ $STEP4_EXIT -ne 0 ]; then
-    echo -e "${YELLOW}⚠️  Step 4 completed with warnings${NC}\n"
+if [ $STEP5_EXIT -ne 0 ]; then
+    echo -e "${YELLOW}⚠️  Step 5 completed with warnings${NC}\n"
 else
-    echo -e "${GREEN}✅ Step 4 complete: Recipe validated${NC}\n"
+    echo -e "${GREEN}✅ Step 5 complete: Recipe validated${NC}\n"
 fi
 
 # Summary

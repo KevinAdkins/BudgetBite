@@ -5,8 +5,12 @@ Takes matched_recipes.json as input and generates creative recipes using Gemini 
 
 import json
 import sys
+<<<<<<< HEAD
 import re
 import os
+=======
+import argparse
+>>>>>>> main
 from pathlib import Path
 from typing import List, Dict
 from google import genai
@@ -32,12 +36,13 @@ def load_matched_recipes(json_file: str) -> List[Dict]:
     return recipes
 
 def format_recipes_for_prompt(recipes: List[Dict], max_recipes: int = 3) -> str:
-    """Format the top matched recipes for the AI prompt."""
+    """Format top matched recipe metadata for inspiration-only context."""
     recipe_text = ""
     for i, recipe in enumerate(recipes[:max_recipes], 1):
         recipe_text += f"\n{i}. {recipe['name'].upper()}\n"
         recipe_text += f"   Category: {recipe['category']}\n"
         recipe_text += f"   Match Score: {recipe['match_score']['percentage']}%\n"
+<<<<<<< HEAD
         recipe_text += f"   Ingredients: {recipe['ingredients']}\n"
         recipe_text += f"   Instructions: {recipe['instructions'][:200]}...\n"
     return recipe_text
@@ -55,17 +60,59 @@ def extract_available_ingredients(recipes: List[Dict]) -> List[str]:
 
 def generate_recipe(matched_recipes: List[Dict], budget_limit: float = 15.00) -> str:
     """Generate a new recipe and check if it fits the budget."""
+=======
+    
+    return recipe_text
+
+
+def load_extracted_ingredients(json_file: str) -> List[str]:
+    """Load ingredients detected directly from the input image."""
+    if not Path(json_file).exists():
+        raise FileNotFoundError(f"Ingredients file not found: {json_file}")
+
+    with open(json_file, 'r') as f:
+        data = json.load(f)
+
+    ingredients = data.get('ingredients', [])
+    extracted_names = []
+    for ing in ingredients:
+        if isinstance(ing, dict):
+            name = str(ing.get('name', '')).strip().lower()
+        else:
+            name = str(ing).strip().lower()
+        if name:
+            extracted_names.append(name)
+
+    unique = []
+    seen = set()
+    for name in extracted_names:
+        if name not in seen:
+            seen.add(name)
+            unique.append(name)
+
+    return unique
+
+
+def generate_recipe(matched_recipes: List[Dict], extracted_ingredients: List[str]) -> str:
+    """Generate a new recipe based on matched recipes from database."""
+>>>>>>> main
     
     if not matched_recipes:
         raise ValueError("No matched recipes provided")
+    if not extracted_ingredients:
+        raise ValueError("No extracted image ingredients provided")
     
     print(f"🤖 Generating creative recipe (Budget Limit: ${budget_limit:.2f})...\n")
     
+<<<<<<< HEAD
+=======
+    # Get top recipes and allowed ingredients from image extraction only.
+>>>>>>> main
     top_recipes = matched_recipes[:3]
-    available_ingredients = extract_available_ingredients(matched_recipes[:5])
+    available_ingredients = extracted_ingredients
     
     recipes_context = format_recipes_for_prompt(top_recipes)
-    ingredients_list = "\n".join([f"  • {ing}" for ing in available_ingredients[:15]])
+    ingredients_list = "\n".join([f"  • {ing}" for ing in available_ingredients])
     
     RECIPE_GENERATION_PROMPT = f"""You are a creative chef and recipe developer.
 
@@ -160,18 +207,50 @@ def main():
     print("🍳 BUDGETBITE RECIPE GENERATOR")
     print("="*70)
     
+<<<<<<< HEAD
     if len(sys.argv) < 2:
         print("Usage: python src/recipe_generator.py <matched_recipes_json> [output_file]")
         sys.exit(1)
     
     input_file = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else "generated_recipe.txt"
+=======
+    parser = argparse.ArgumentParser(
+        description="Generate a recipe from matched recipes using image-extracted ingredients.",
+    )
+    parser.add_argument("matched_recipes_json", help="Path to matched_recipes.json")
+    parser.add_argument("output_file", nargs="?", default="generated_recipe.txt", help="Output file path")
+    parser.add_argument(
+        "--ingredients-file",
+        default="ingredients.json",
+        help="Path to ingredient extractor output JSON (default: ingredients.json)",
+    )
+    args = parser.parse_args()
+    input_file = args.matched_recipes_json
+    output_file = args.output_file
+>>>>>>> main
     
     matched_recipes = load_matched_recipes(input_file)
     
+<<<<<<< HEAD
     # You can change the budget_limit value here
     recipe_text = generate_recipe(matched_recipes, budget_limit=12.50)
     
+=======
+    if not matched_recipes:
+        print("❌ No matched recipes found. Run retrieval.py first.")
+        sys.exit(1)
+
+    extracted_ingredients = load_extracted_ingredients(args.ingredients_file)
+    if not extracted_ingredients:
+        print("❌ No extracted ingredients found. Run ingredient_extractor.py first.")
+        sys.exit(1)
+    
+    # Step 2: Generate new recipe
+    recipe_text = generate_recipe(matched_recipes, extracted_ingredients)
+    
+    # Step 3: Display recipe
+>>>>>>> main
     display_recipe(recipe_text)
     save_generated_recipe(recipe_text, output_file)
     
