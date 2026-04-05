@@ -14,11 +14,21 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel
 from dotenv import load_dotenv
+import argparse
 import os
 import re
+import sys
 import time
+from pathlib import Path
 from typing import List, Dict, Set
-from backend.pull import run_search 
+
+# Ensure project root is on sys.path when running as a script from src/
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from backend.pull import run_search
+
 
 load_dotenv()
 
@@ -27,7 +37,7 @@ load_dotenv()
 # ═══════════════════════════════════════════════════════════════════════════
 
 CONFIDENCE_THRESHOLD = 0.7  # Only use ingredients with confidence >= 0.7
-IMAGE_PATH = 'foodImages/spaghetti-ingredients.jpg'
+DEFAULT_IMAGE_PATH = 'foodImages/spaghetti-ingredients.jpg'
 
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
@@ -310,16 +320,42 @@ def validate_recipe(extracted: IngredientList, validated_ingredients: List[Ingre
 # ═══════════════════════════════════════════════════════════════════════════
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Validate generated recipes against ingredients extracted from an image"
+    )
+    parser.add_argument(
+        "image_path",
+        nargs="?",
+        default=DEFAULT_IMAGE_PATH,
+        help="Path to the input image"
+    )
+    parser.add_argument(
+        "recipe_file",
+        nargs="?",
+        default=None,
+        help="Optional path to an existing recipe text file. If omitted, a recipe is generated."
+    )
+    parser.add_argument(
+        "--confidence-threshold",
+        type=float,
+        default=CONFIDENCE_THRESHOLD,
+        help="Minimum confidence score for extracted ingredients"
+    )
+    args = parser.parse_args()
+
+    image_path = args.image_path
+    confidence_threshold = args.confidence_threshold
+
     print("=" * 80)
     print("RECIPE VALIDATION SYSTEM")
     print("=" * 80)
-    print(f"Image: {IMAGE_PATH}")
-    print(f"Confidence Threshold: {CONFIDENCE_THRESHOLD}")
+    print(f"Image: {image_path}")
+    print(f"Confidence Threshold: {confidence_threshold}")
     print("=" * 80)
     
     # Step 1: Extract ingredients
     print("\n[STEP 1] Extracting ingredients from image...")
-    extracted = extract_ingredients(IMAGE_PATH)
+    extracted = extract_ingredients(image_path)
     print(f"✓ Extracted {len(extracted.ingredients)} ingredients")
     print(f"  Non-food items detected: {extracted.non_food_items_detected}")
     
@@ -330,8 +366,8 @@ def main():
         print(f"  {confidence_icon} {ing.name} ({ing.category}): {qty} [confidence: {ing.confidence:.2f}]")
     
     # Step 2: Filter by confidence
-    print(f"\n[STEP 2] Filtering by confidence (>= {CONFIDENCE_THRESHOLD})...")
-    validated_ingredients = filter_by_confidence(extracted, CONFIDENCE_THRESHOLD)
+    print(f"\n[STEP 2] Filtering by confidence (>= {confidence_threshold})...")
+    validated_ingredients = filter_by_confidence(extracted, confidence_threshold)
     print(f"✓ {len(validated_ingredients)} ingredients passed confidence threshold")
     
     if len(extracted.ingredients) - len(validated_ingredients) > 0:
@@ -343,9 +379,15 @@ def main():
         print(f"  • {ing.name} ({ing.category}): {qty}")
     
     # Step 3: Generate recipe
-    print("\n[STEP 3] Generating recipe...")
-    recipe = generate_recipe(validated_ingredients)
-    print("✓ Recipe generated")
+    if args.recipe_file:
+        print("\n[STEP 3] Loading recipe from file...")
+        with open(args.recipe_file, 'r', encoding='utf-8') as f:
+            recipe = f.read().strip()
+        print(f"✓ Loaded recipe from {args.recipe_file}")
+    else:
+        print("\n[STEP 3] Generating recipe...")
+        recipe = generate_recipe(validated_ingredients)
+        print("✓ Recipe generated")
     
     print("\n[GENERATED RECIPE]")
     print("-" * 80)
