@@ -97,6 +97,53 @@ def init_db():
             )
         ''')
 
+        cursor.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS pricing_runs (
+                id TEXT PRIMARY KEY,
+                created_at TEXT NOT NULL,
+                zip_code TEXT,
+                location_id TEXT,
+                strategy TEXT,
+                subtotal REAL,
+                estimated_total REAL,
+                priced_count INTEGER,
+                requested_count INTEGER,
+                meal_id TEXT,
+                source TEXT
+            )
+            '''
+        )
+
+        cursor.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS pricing_line_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id TEXT NOT NULL,
+                ingredient TEXT,
+                search_term TEXT,
+                found INTEGER,
+                price REAL,
+                reason TEXT,
+                product_description TEXT,
+                product_brand TEXT,
+                product_upc TEXT,
+                sample_prices_json TEXT,
+                FOREIGN KEY (run_id) REFERENCES pricing_runs(id)
+            )
+            '''
+        )
+
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pricing_runs_created_at ON pricing_runs(created_at)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pricing_runs_meal_id_created_at ON pricing_runs(meal_id, created_at DESC)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pricing_line_items_run_id ON pricing_line_items(run_id)"
+        )
+
         # Handle additive schema migrations safely.
         existing_columns = {
             row["name"] for row in cursor.execute("PRAGMA table_info(meals)").fetchall()

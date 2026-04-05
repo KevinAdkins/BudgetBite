@@ -1,5 +1,8 @@
 import sqlite3
 import os
+import json
+import uuid
+from datetime import datetime, timezone
 from contextlib import contextmanager
 
 # Shared DB location for backend modules.
@@ -114,3 +117,73 @@ def delete_meal_by_id(meal_id):
         rows_affected = cursor.rowcount
         conn.commit()
     return rows_affected > 0
+
+
+# --- Pricing Persistence ---
+
+def _now_utc_iso():
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def save_pricing_run(pricing_result, meal_id=None, source="api"):
+    """Persist one pricing response and its line items to SQLite."""
+    if not isinstance(pricing_result, dict):
+        raise ValueError("pricing_result must be a dictionary")
+
+    run_id = str(uuid.uuid4())
+    created_at = _now_utc_iso()
+    line_items = pricing_result.get("lineItems") or []
+
+    with get_db_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO pricing_runs (
+                id, created_at, zip_code, location_id, strategy,
+                subtotal, estimated_total, priced_count, requested_count,
+                meal_id, source
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                run_id,
+                created_at,
+                pricing_result.get("zipCode"),
+                pricing_result.get("locationId"),
+                pricing_result.get("priceStrategy"),
+                pricing_result.get("subtotal"),
+                pricing_result.get("estimatedTotal"),
+                pricing_result.get("pricedCount"),
+                pricing_result.get("requestedCount"),
+                meal_id,
+                source,
+            ),
+        )
+
+        for item in line_items:
+            product = item.get("product") or {}
+            sample_prices = item.get("samplePrices")
+            conn.execute(
+                """
+                INSERT INTO pricing_line_items (
+                    run_id, ingredient, search_term, found, price, reason,
+                    product_description, product_brand, product_upc, sample_prices_json
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    item.get("ingredient"),
+                    item.get("searchTerm"),
+                    1 if item.get("found") else 0,
+                    item.get("price"),
+                    item.get("reason"),
+                    product.get("description"),
+                    product.get("brand"),
+                    product.get("upc"),
+                    json.dumps(sample_prices) if sample_prices is not None else None,
+                ),
+            )
+
+        conn.commit()
+
+    return run_id
