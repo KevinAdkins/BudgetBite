@@ -12,7 +12,9 @@ app = Flask(__name__)
 # Enable CORS for frontend access
 CORS(app)
 
-# Initialize database on startup
+# Maintainer note:
+# Keep DB initialization before blueprint registration so first request does not
+# race table creation when running in a fresh environment.
 pull.init_db()
 
 # Register blueprints
