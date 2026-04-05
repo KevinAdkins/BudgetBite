@@ -1,23 +1,29 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 import pull
 from routes.meal_routes import meal_bp
 from routes.pricing_routes import pricing_bp
+import base64
+import tempfile
+import os
+import sys
+
+# Add src to path so we can import from it
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+from ingredient_extractor import extract_ingredients
+from retrieval import get_all_meals, match_ingredients_to_meals
 
 load_dotenv()
-
 app = Flask(__name__)
 
-# Enable CORS for frontend access
+# Enable CORS for frontned access
 CORS(app)
-
 # Maintainer note:
 # Keep DB initialization before blueprint registration so first request does not
 # race table creation when running in a fresh environment.
 pull.init_db()
 
-# Register blueprints
 app.register_blueprint(meal_bp, url_prefix='/api')
 app.register_blueprint(pricing_bp, url_prefix='/api')
 
@@ -29,15 +35,75 @@ def home():
         "endpoints": {
             "GET /api/meals": "Get all meals",
             "GET /api/meals/<name>": "Get specific meal",
-            "GET /api/meals/search?name=<name>": "Search for meal (DB + API)",
-            "GET /api/meals/search-by-ingredient?ingredient=<ingredient>&full=true&first=true": "Search by ingredient and optionally return full details for first match",
-            "POST /api/pricing/ingredients": "Estimate total ingredient cost with Kroger API",
-            "POST /api/meals": "Add new meal",
-            "PUT /api/meals/<name>": "Update meal",
-            "PATCH /api/meals/<name>/instructions": "Update instructions only",
-            "DELETE /api/meals/<name>": "Delete meal"
+            "GET /api/meals/search?name=<name>": "Search for meal",
+            "POST /api/analyze": "Analyze fridge image"
         }
     })
 
+@app.route('/api/analyze', methods=['POST'])
+def analyze_image():
+    try:
+        data = request.get_json()
+        if not data or 'image' not in data:
+            return jsonify({"error": "No image provided"}), 400
+
+        budget_tier = data.get('budget_tier', 'tier1')
+        budget_labels = {
+            'tier1': 'less than $25 (budget-friendly, cheap ingredients)',
+            'tier2': 'between $25 and $50 (moderate budget)',
+            'tier3': 'greater than $50 (premium ingredients allowed)'
+        }
+        budget_description = budget_labels.get(budget_tier, 'less than $25')
+
+        # Decode base64 image to temp file
+        image_data = base64.b64decode(data['image'])
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp:
+            tmp.write(image_data)
+            tmp_path = tmp.name
+
+        # Step 1: Extract ingredients via Gemini
+        result = extract_ingredients(tmp_path, budget_description)
+        os.unlink(tmp_path)
+
+        ingredients = [
+            {
+                "name": ing.name,
+                "quantity": ing.quantity,
+                "unit": ing.unit,
+                "category": ing.category
+            }
+            for ing in result.ingredients
+        ]
+
+        # Step 2: Match to recipes in DB
+        meals = get_all_meals()
+        matches = match_ingredients_to_meals(ingredients, meals)
+
+        # Return top 5 matches
+        top_matches = []
+        for match in matches[:5]:
+            meal = match['meal']
+            top_matches.append({
+                "name": meal['name'],
+                "category": meal.get('category', 'unknown'),
+                "ingredients": meal.get('ingredients', ''),
+                "instructions": meal.get('instructions', ''),
+                "match_score": {
+                    "percentage": round(match['match_percentage'], 1),
+                    "matching": match['matching_count'],
+                    "total": match['total_ingredients'],
+                    "missing": match['missing_count']
+                }
+            })
+
+        return jsonify({
+            "ingredients": ingredients,
+            "non_food_items_detected": result.non_food_items_detected,
+            "matched_recipes": top_matches
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5001, host='0.0.0.0')
