@@ -264,7 +264,6 @@ export default function Camera() {
         </View>
       )}
 
-      {/* BUDGET MODAL MOVED HERE - outside analysisResult block */}
       <Modal
         transparent
         visible={showBudgetModal}
