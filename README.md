@@ -99,16 +99,37 @@ Create a .env file
 GEMINI_API_KEY=your-api-key
 ```
 
+### 5. Kroger API Setup
+In the same .env file from the Genimi Setup
+```bash
+KROGER_CLIENT_ID=app-name
+KROGER_CLIENT_SECRET=your-api-key
+KROGER_BASE_URL=https://api-ce.kroger.com
+KROGER_SCOPE=product-scope
+KROGER_ZIP_CODE=zip-code
+```
+
 ## API Endpoints
 The backend provides the following endpoints:
+
+### Meals
 - **GET** `/api/meals` - Get all meals
 - **GET** `/api/meals/<name>` - Get specific meal by name
 - **GET** `/api/meals/search?name=<name>` - Search for meal (checks database and external API)
+
 (In-progress haven't tested yet skeleton code)
 - **POST** `/api/meals` - Add new meal
 - **PUT** `/api/meals/<name>` - Update meal
 - **PATCH** `/api/meals/<name>/instructions` - Update instructions only
 - **DELETE** `/api/meals/<name>` - Delete meal
+
+### Analysis
+- **POST** `/api/analyze` - Analyze fridge image
+
+### Pricing
+- **POST** `/api/pricing/ingredients` - Estimate ingredient pricing via blueprint route
+- **POST** `/api/kroger/pricing/ingredients` - Estimate ingredient pricing via app route
+- **GET** `/api/kroger/pricing/strategies` - List allowed Kroger pricing strategies
 
 ## Troubleshooting
 
