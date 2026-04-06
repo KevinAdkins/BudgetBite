@@ -73,7 +73,7 @@ def normalize_generated_ingredient(line: str) -> str:
         r"^(?:an?\s+)?(cup|cups|tbsp|tsp|teaspoon|teaspoons|tablespoon|tablespoons|"
         r"oz|ounce|ounces|lb|lbs|pound|pounds|g|kg|ml|l|portion|portions|slice|slices|"
         r"piece|pieces|ring|rings|head|heads|small|medium|large|bowl|bowls|full|half|"
-        r"clove|cloves|stalk|stalks|bunch|bunches|can|cans|package|packages|pinch|pinches)\b",
+        r"clove|cloves|stalk|stalks|bunch|bunches|can|cans|jar|jars|package|packages|pinch|pinches)\b",
         "",
         text,
         flags=re.IGNORECASE,
