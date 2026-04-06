@@ -3,6 +3,7 @@ import { useRef, useState, useEffect } from "react";
 import { budgetStore, BUDGET_TIERS, BudgetTier } from "./budgetStore";
 import {
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -36,6 +37,16 @@ export default function Camera() {
   const [analysisResult, setAnalysisResult] = useState<{
     ingredients: { name: string; category: string }[];
     matched_recipes: { name: string; match_score: { percentage: number } }[];
+    generated_recipe?: string | null;
+    generated_recipe_pricing?: {
+      estimatedTotal?: number;
+      subtotal?: number;
+      pricedCount?: number;
+      requestedCount?: number;
+    } | null;
+    generated_recipe_pricing_ingredients?: string[];
+    generated_recipe_pricing_error?: string | null;
+    recipe_generation_error?: string | null;
   } | null>(null);
 
   const sweepAnim = useRef(new Animated.Value(0)).current;
@@ -213,23 +224,79 @@ export default function Camera() {
 
       {analysisResult && (
         <View style={styles.analysisCard}>
-          <Text style={styles.analysisTitle}>🥘 Ingredients Found</Text>
-          <Text style={styles.analysisIngredients}>
-            {analysisResult.ingredients.map((i) => i.name).join(", ")}
-          </Text>
-          <Text style={styles.analysisTitle}>🍽️ Matched Recipes</Text>
-          {analysisResult.matched_recipes.length === 0 ? (
-            <Text style={styles.analysisNone}>No recipes matched</Text>
-          ) : (
-            analysisResult.matched_recipes.map((r, i) => (
-              <View key={i} style={styles.recipeRow}>
-                <Text style={styles.recipeName}>{r.name}</Text>
-                <Text style={styles.recipeScore}>
-                  {r.match_score.percentage}%
+          <ScrollView
+            style={styles.analysisScroll}
+            contentContainerStyle={styles.analysisScrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={styles.analysisTitle}>🥘 Ingredients Found</Text>
+            <Text style={styles.analysisIngredients}>
+              {analysisResult.ingredients.map((i) => i.name).join(", ")}
+            </Text>
+
+            <Text style={styles.analysisTitle}>🍽️ Matched Recipes</Text>
+            {analysisResult.matched_recipes.length === 0 ? (
+              <Text style={styles.analysisNone}>No recipes matched</Text>
+            ) : (
+              analysisResult.matched_recipes.map((r, i) => (
+                <View key={i} style={styles.recipeRow}>
+                  <Text style={styles.recipeName}>{r.name}</Text>
+                  <Text style={styles.recipeScore}>
+                    {r.match_score.percentage}%
+                  </Text>
+                </View>
+              ))
+            )}
+
+            <Text style={styles.analysisTitle}>👩‍🍳 Generated Recipe</Text>
+            {analysisResult.generated_recipe ? (
+              <View style={styles.generatedRecipeBox}>
+                <Text style={styles.generatedRecipeText}>
+                  {analysisResult.generated_recipe}
                 </Text>
               </View>
-            ))
-          )}
+            ) : (
+              <Text style={styles.analysisNone}>
+                {analysisResult.recipe_generation_error
+                  ? `Could not generate recipe: ${analysisResult.recipe_generation_error}`
+                  : "No generated recipe returned"}
+              </Text>
+            )}
+
+            <Text style={styles.analysisTitle}>💲 Estimated Recipe Cost</Text>
+            {analysisResult.generated_recipe_pricing ? (
+              <View style={styles.priceCard}>
+                <Text style={styles.priceValue}>
+                  $
+                  {Number(
+                    analysisResult.generated_recipe_pricing.estimatedTotal ??
+                      analysisResult.generated_recipe_pricing.subtotal ??
+                      0,
+                  ).toFixed(2)}
+                </Text>
+                <Text style={styles.priceMeta}>
+                  {analysisResult.generated_recipe_pricing.pricedCount ?? 0} of{" "}
+                  {analysisResult.generated_recipe_pricing.requestedCount ?? 0}{" "}
+                  ingredients priced
+                </Text>
+                {analysisResult.generated_recipe_pricing_ingredients?.length ? (
+                  <Text style={styles.priceIngredients}>
+                    Used:{" "}
+                    {analysisResult.generated_recipe_pricing_ingredients.join(
+                      ", ",
+                    )}
+                  </Text>
+                ) : null}
+              </View>
+            ) : (
+              <Text style={styles.analysisNone}>
+                {analysisResult.generated_recipe_pricing_error
+                  ? `Could not price recipe: ${analysisResult.generated_recipe_pricing_error}`
+                  : "No pricing returned"}
+              </Text>
+            )}
+          </ScrollView>
+
           <View style={styles.resultButtons}>
             <Pressable
               style={[
@@ -621,10 +688,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 20,
+    justifyContent: "flex-start",
+    gap: 12,
+    paddingTop: 20,
+    paddingBottom: 16,
   },
-  previewImage: { width: "100%", aspectRatio: 1 },
+  previewImage: {
+    width: "100%",
+    height: 240,
+    flexShrink: 0,
+  },
   previewButtons: { flexDirection: "row", gap: 12, paddingHorizontal: 24 },
   previewBtn: {
     flex: 1,
@@ -708,6 +781,15 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 20,
     gap: 8,
+    maxHeight: 520,
+    flexShrink: 1,
+  },
+  analysisScroll: {
+    flexGrow: 0,
+  },
+  analysisScrollContent: {
+    gap: 8,
+    paddingBottom: 12,
   },
   analysisTitle: {
     color: ACCENT,
@@ -726,6 +808,40 @@ const styles = StyleSheet.create({
   },
   recipeName: { color: "#fff", fontSize: 14, fontWeight: "500" },
   recipeScore: { color: ACCENT, fontSize: 14, fontWeight: "bold" },
+  generatedRecipeBox: {
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    padding: 14,
+  },
+  generatedRecipeText: {
+    color: "#eee",
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  priceCard: {
+    backgroundColor: "rgba(74,222,128,0.08)",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(74,222,128,0.22)",
+    padding: 14,
+    gap: 6,
+  },
+  priceValue: {
+    color: "#fff",
+    fontSize: 26,
+    fontWeight: "800",
+  },
+  priceMeta: {
+    color: "#9be7b5",
+    fontSize: 12,
+  },
+  priceIngredients: {
+    color: "#cfeedd",
+    fontSize: 12,
+    lineHeight: 18,
+  },
 
   budgetModal: {
     position: "absolute",
