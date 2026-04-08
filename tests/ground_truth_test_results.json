@@ -1,0 +1,207 @@
+{
+  "results": [
+    {
+      "image": "fridge1.webp",
+      "success": true,
+      "metrics": {
+        "precision": 0.462,
+        "recall": 0.75,
+        "f1_score": 0.571
+      },
+      "matches": {
+        "matched_count": 6,
+        "fuzzy_matches": [
+          [
+            "carrot",
+            "carrots"
+          ],
+          [
+            "green bean",
+            "green beans"
+          ]
+        ],
+        "misses": [
+          "grapes",
+          "yogurt"
+        ],
+        "false_positives": [
+          "red grape",
+          "guacamole",
+          "broccoli",
+          "vanilla yogurt",
+          "corn tortilla",
+          "penne pasta",
+          "celery"
+        ]
+      },
+      "ground_truth_count": 8,
+      "extracted_count": 13
+    },
+    {
+      "image": "fridge2.jpg",
+      "success": true,
+      "metrics": {
+        "precision": 0.474,
+        "recall": 0.692,
+        "f1_score": 0.562
+      },
+      "matches": {
+        "matched_count": 9,
+        "fuzzy_matches": [
+          [
+            "pineapple",
+            "pineappe"
+          ],
+          [
+            "banana",
+            "bananna"
+          ],
+          [
+            "egg",
+            "eggs"
+          ]
+        ],
+        "misses": [
+          "nutella",
+          "tomato sauce",
+          "coke",
+          "fruit punch"
+        ],
+        "false_positives": [
+          "yogurt",
+          "pasta sauce",
+          "chocolate hazelnut spread",
+          "cheese sauce",
+          "cantaloupe",
+          "orange",
+          "starfruit",
+          "fruit juice",
+          "milk",
+          "mint"
+        ]
+      },
+      "ground_truth_count": 13,
+      "extracted_count": 19
+    },
+    {
+      "image": "fridge3.webp",
+      "success": true,
+      "metrics": {
+        "precision": 0.241,
+        "recall": 0.538,
+        "f1_score": 0.333
+      },
+      "matches": {
+        "matched_count": 7,
+        "fuzzy_matches": [],
+        "misses": [
+          "mayo",
+          "sugar",
+          "strawberry",
+          "sliced ham",
+          "stock",
+          "blue cheese dressing"
+        ],
+        "false_positives": [
+          "general tso's chicken",
+          "potato tots",
+          "uncrustables",
+          "french fries",
+          "bread buns",
+          "ground beef",
+          "spinach",
+          "strawberries",
+          "yogurt",
+          "granulated sugar",
+          "shredded cheese",
+          "eggs",
+          "deli meat",
+          "chicken stock",
+          "mayonnaise",
+          "yellow mustard",
+          "ranch dressing",
+          "grape juice",
+          "worcestershire sauce",
+          "parmesan cheese",
+          "orange juice",
+          "apple juice"
+        ]
+      },
+      "ground_truth_count": 13,
+      "extracted_count": 29
+    },
+    {
+      "image": "fridge4.jpeg",
+      "success": true,
+      "metrics": {
+        "precision": 0.455,
+        "recall": 0.556,
+        "f1_score": 0.5
+      },
+      "matches": {
+        "matched_count": 5,
+        "fuzzy_matches": [
+          [
+            "peanut butter",
+            "penaut butter"
+          ]
+        ],
+        "misses": [
+          "strawberry yogurt",
+          "mayo",
+          "apples",
+          "eggo waffles"
+        ],
+        "false_positives": [
+          "butter",
+          "frozen meal",
+          "liquid egg product",
+          "yogurt",
+          "salad dressing",
+          "green apples"
+        ]
+      },
+      "ground_truth_count": 9,
+      "extracted_count": 11
+    },
+    {
+      "image": "fridge5.jpeg",
+      "success": true,
+      "metrics": {
+        "precision": 0.25,
+        "recall": 0.4,
+        "f1_score": 0.308
+      },
+      "matches": {
+        "matched_count": 2,
+        "fuzzy_matches": [],
+        "misses": [
+          "grapes",
+          "pickles",
+          "papaya"
+        ],
+        "false_positives": [
+          "pickled cucumber",
+          "green grapes",
+          "apple",
+          "canary melon",
+          "orange",
+          "lemon"
+        ]
+      },
+      "ground_truth_count": 5,
+      "extracted_count": 8
+    }
+  ],
+  "summary": {
+    "total_tests": 5,
+    "successful": 5,
+    "failed": 0,
+    "avg_precision": 0.376,
+    "avg_recall": 0.587,
+    "avg_f1": 0.455,
+    "total_ground_truth": 48,
+    "total_extracted": 80,
+    "total_matched": 29
+  }
+}
