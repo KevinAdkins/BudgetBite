@@ -1,5 +1,5 @@
 # BudgetBite
-Senior Project
+Senior Project <br>
 An app that can take a picture of what you have and come up with a meal idea.<br>
 The goal is to keep it budget-friendly while recommending you healthy meals to make.
 
