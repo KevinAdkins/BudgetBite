@@ -29,7 +29,7 @@ After Milestone 2, BudgetBite has an impressive full-stack system (React Native 
 | Add text input path | Kevin | Add text-based ingredient input to frontend (not just camera). Support typing/pasting ingredient list |
 | Implement budget regeneration | David | Add regeneration loop in `app.py`: if recipe exceeds selected budget tier, regenerate with tighter constraints (max 2 retries) |
 | Fix validator parsing bug | Alvaro | Fix ingredient parser to filter out measurement words ("thinly", "shredded", "tbsp", "leaves") from unmatched ingredient detection |
-| Fix port inconsistency | David | Standardize port (5000 or 5001) across README and `app.py` |
+| Fix port inconsistency | Eric | Standardize port (5000 or 5001) across README and `app.py` |
 | Fix camera IP | Kevin | Replace hardcoded `192.168.1.x` in camera.tsx with configurable backend URL |
 
 ### P2 — System Robustness (Days 4–6)
