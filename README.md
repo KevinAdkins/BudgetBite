@@ -52,7 +52,7 @@ python (or py) backend/seed.py --export-csv
 python (or py) app.py
 ```
 
-The backend API will start running at `http://localhost:5000`
+The backend API will start running at `http://localhost:5001`
 
 You should see a message indicating the Flask server is running.
 
@@ -90,8 +90,8 @@ npx expo start --web --host tunnel
 
 ### 3. Test the API
 You can test if the backend is working by visiting these endpoints in your browser:
-- `http://localhost:5000/` - API information
-- `http://localhost:5000/api/meals` - View all meals (pls let me know if it works)
+- `http://localhost:5001/` - API information
+- `http://localhost:5001/api/meals` - View all meals (pls let me know if it works)
 
 ### 4. Genimi API Setup
 Create a .env file
@@ -320,7 +320,7 @@ curl http://localhost:5000/api/meals/spaghetti
                      ┌──────────────┐
                      │  Backend API │
                      │ (localhost:  │
-                     │   5000)      │
+                     │   5001)      │
                      └──────┬───────┘
                             │
                             ▼
