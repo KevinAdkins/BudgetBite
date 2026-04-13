@@ -2,6 +2,7 @@ import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { useRef, useState, useEffect } from "react";
 import { budgetStore, BUDGET_TIERS, BudgetTier } from "./budgetStore";
 import {
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -34,6 +35,9 @@ export default function Camera() {
   const [added, setAdded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [addedIngredients, setAddedIngredients] = useState(false);
+  const [lastAnalysisTier, setLastAnalysisTier] = useState<BudgetTier | null>(
+    null,
+  );
   const [analysisResult, setAnalysisResult] = useState<{
     ingredients: { name: string; category: string }[];
     matched_recipes: { name: string; match_score: { percentage: number } }[];
@@ -47,6 +51,10 @@ export default function Camera() {
     generated_recipe_pricing_ingredients?: string[];
     generated_recipe_pricing_error?: string | null;
     recipe_generation_error?: string | null;
+    recipe_over_budget?: boolean;
+    can_regenerate?: boolean;
+    regeneration_prompt?: string | null;
+    regeneration_requested?: boolean;
   } | null>(null);
 
   const sweepAnim = useRef(new Animated.Value(0)).current;
@@ -92,6 +100,29 @@ export default function Camera() {
       slideUp.setValue(300);
     }
   }, [scanResult]);
+
+  useEffect(() => {
+    if (!analysisResult || !uri || !lastAnalysisTier) return;
+    if (!analysisResult.can_regenerate || analysisResult.regeneration_requested)
+      return;
+
+    Alert.alert(
+      "Recipe outside budget range",
+      analysisResult.regeneration_prompt ||
+        "This recipe is outside your selected budget range. Regenerate recipe?",
+      [
+        { text: "No", style: "cancel" },
+        {
+          text: "Yes",
+          onPress: () =>
+            analyzeImage(uri, lastAnalysisTier, {
+              regenerateRecipe: true,
+            }),
+        },
+      ],
+      { cancelable: true },
+    );
+  }, [analysisResult, uri, lastAnalysisTier]);
 
   if (!permission) return null;
 
@@ -144,8 +175,13 @@ export default function Camera() {
     setFacing((prev) => (prev === "back" ? "front" : "back"));
   };
 
-  const analyzeImage = async (imageUri: string, tier: BudgetTier) => {
+  const analyzeImage = async (
+    imageUri: string,
+    tier: BudgetTier,
+    options?: { regenerateRecipe?: boolean },
+  ) => {
     setAnalyzing(true);
+    setLastAnalysisTier(tier);
     try {
       const response = await fetch(imageUri);
       const blob = await response.blob();
@@ -159,10 +195,14 @@ export default function Camera() {
         reader.readAsDataURL(blob);
       });
 
-      const res = await fetch("http://192.168.1.x:5001/api/analyze", {
+      const res = await fetch("http://192.168.1.166:5001/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64, budget_tier: tier }),
+        body: JSON.stringify({
+          image: base64,
+          budget_tier: tier,
+          regenerate_recipe: Boolean(options?.regenerateRecipe),
+        }),
       });
 
       const data = await res.json();
