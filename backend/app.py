@@ -305,5 +305,49 @@ def kroger_price_ingredients():
     except Exception as e:
         return jsonify({"error": f"Failed to estimate ingredient pricing: {str(e)}"}), 502
 
+@app.route('/api/analyze-text', methods=['POST'])
+def analyze_text():
+    try:
+        data = request.get_json()
+        if not data or 'ingredients' not in data:
+            return jsonify({"error": "No ingredients provided"}), 400
+
+        budget_tier = data.get('budget_tier', 'tier1')
+
+        # Parse comma text input
+        raw = data['ingredients']
+        ingredients = [
+            {"name": i.strip(), "quantity": None, "unit": None, "category": "unknown"}
+            for i in raw.split(',') if i.strip()
+        ]
+
+        # Match recipes in the database
+        meals = get_all_meals()
+        matches = match_ingredients_to_meals(ingredients, meals)
+
+        top_matches = []
+        for match in matches[:5]:
+            meal = match['meal']
+            top_matches.append({
+                "name": meal['name'],
+                "category": meal.get('category', 'unknown'),
+                "ingredients": meal.get('ingredients', ''),
+                "instructions": meal.get('instructions', ''),
+                "match_score": {
+                    "percentage": round(match['match_percentage'], 1),
+                    "matching": match['matching_count'],
+                    "total": match['total_ingredients'],
+                    "missing": match['missing_count']
+                }
+            })
+
+        return jsonify({
+            "ingredients": ingredients,
+            "matched_recipes": top_matches
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(debug=True, port=5001, host='0.0.0.0')
