@@ -1,6 +1,8 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from dotenv import load_dotenv
 import pull
 import kroger_pricing
 from routes.meal_routes import meal_bp
@@ -17,7 +19,6 @@ from retrieval import get_all_meals, match_ingredients_to_meals
 from recipe_generator import generate_recipe
 from pricing import extract_ingredients_from_recipe_text, filter_pricing_ingredients
 
-load_dotenv()
 app = Flask(__name__)
 
 BUDGET_TIER_LIMITS = {
