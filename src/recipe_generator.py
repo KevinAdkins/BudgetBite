@@ -2,7 +2,8 @@
 Recipe Generator - Uses matched recipes from backend to generate new recipe suggestions
 Takes matched_recipes.json as input and generates creative recipes using Gemini AI
 """
-
+from dotenv import load_dotenv
+load_dotenv()
 import json
 import sys
 import argparse
@@ -13,7 +14,6 @@ from google.genai import types
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
 
 # Gemini client
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
