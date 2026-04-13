@@ -626,4 +626,3 @@ const styles = StyleSheet.create({
   },
   textButtons: { flexDirection: "row", gap: 12 },
 });
-
