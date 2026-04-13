@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import pull
 from routes.meal_routes import meal_bp
 from routes.pricing_routes import pricing_bp
+from routes.pipeline_routes import pipeline_bp
 
 load_dotenv()
 
@@ -20,6 +21,7 @@ pull.init_db()
 # Register blueprints
 app.register_blueprint(meal_bp, url_prefix='/api')
 app.register_blueprint(pricing_bp, url_prefix='/api')
+app.register_blueprint(pipeline_bp, url_prefix='/api')
 
 @app.route('/')
 def home():
@@ -32,6 +34,7 @@ def home():
             "GET /api/meals/search?name=<name>": "Search for meal (DB + API)",
             "GET /api/meals/search-by-ingredient?ingredient=<ingredient>&full=true&first=true": "Search by ingredient and optionally return full details for first match",
             "POST /api/pricing/ingredients": "Estimate total ingredient cost with Kroger API",
+            "POST /api/pipeline/generate-recipe": "Main pipeline: Generate recipe from ingredients with validation + budget checking",
             "POST /api/meals": "Add new meal",
             "PUT /api/meals/<name>": "Update meal",
             "PATCH /api/meals/<name>/instructions": "Update instructions only",
