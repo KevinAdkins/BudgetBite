@@ -30,7 +30,7 @@ export default function PantryScreen() {
         <View style={styles.empty}>
           <Text style={styles.emptyIcon}>🧊</Text>
           <Text style={styles.emptyText}>Your pantry is empty</Text>
-          <Text style={styles.emptySubtext}>Scan a barcode to add items</Text>
+          <Text style={styles.emptySubtext}>Scan food items to add to your pantry</Text>
         </View>
       ) : (
         <FlatList
