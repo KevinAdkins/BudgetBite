@@ -17,6 +17,9 @@ import { Image } from "expo-image";
 import { pantryStore } from "./pantryStore";
 
 const ACCENT = "#4ade80";
+const API_BASE_URL = (
+  process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:5001"
+).replace(/\/$/, "");
 
 export default function Camera() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -195,7 +198,7 @@ export default function Camera() {
         reader.readAsDataURL(blob);
       });
 
-      const res = await fetch("http://192.168.1.x:5001/api/analyze", {
+      const res = await fetch(`${API_BASE_URL}/api/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
