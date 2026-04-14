@@ -19,7 +19,7 @@ After Milestone 2, BudgetBite has an impressive full-stack system (React Native 
 | Task | Owner | Description |
 |---|---|---|
 | Write Demo Guide | Jorge | Create `/docs/Milestone 2 Demo Guide.md` with exact steps, commands, env vars, and all 3 flows (success, refusal, budget failure) |
-| Complete test cases | Eric | Fill in the 6 empty test cases in `mvp_test_cases.md` (4 success + 2 refusal) with real data and screenshots |
+| Complete test cases | Jorge | Fill in the 6 empty test cases in `mvp_test_cases.md` (4 success + 2 refusal) with real data and screenshots |
 | Update PRD | Jorge | Update PRD.md to reflect current system: Kroger API, budget tiers, Gemini Vision (remove CV segmentation references) |
 
 ### P1 — Missing Features (Days 2–5)
