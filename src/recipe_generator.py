@@ -3,14 +3,11 @@ Recipe Generator - Uses matched recipes from backend to generate new recipe sugg
 Takes matched_recipes.json as input and generates creative recipes using Gemini AI.
 """
 
-import json
-import sys
-<<<<<<< HEAD
-import re
-import os
-=======
 import argparse
->>>>>>> main
+import json
+import os
+import re
+import sys
 from pathlib import Path
 from typing import List, Dict
 from google import genai
@@ -42,25 +39,10 @@ def format_recipes_for_prompt(recipes: List[Dict], max_recipes: int = 3) -> str:
         recipe_text += f"\n{i}. {recipe['name'].upper()}\n"
         recipe_text += f"   Category: {recipe['category']}\n"
         recipe_text += f"   Match Score: {recipe['match_score']['percentage']}%\n"
-<<<<<<< HEAD
-        recipe_text += f"   Ingredients: {recipe['ingredients']}\n"
-        recipe_text += f"   Instructions: {recipe['instructions'][:200]}...\n"
-    return recipe_text
+        recipe_text += f"   Ingredients: {recipe.get('ingredients', '')}\n"
+        instructions = str(recipe.get('instructions', ''))
+        recipe_text += f"   Instructions: {instructions[:200]}...\n"
 
-def extract_available_ingredients(recipes: List[Dict]) -> List[str]:
-    """Extract all unique ingredients from matched recipes."""
-    ingredients = set()
-    for recipe in recipes:
-        ing_list = recipe.get('ingredients', '').split(',')
-        for ing in ing_list:
-            ing_clean = ing.strip().lower()
-            if ing_clean:
-                ingredients.add(ing_clean)
-    return sorted(list(ingredients))
-
-def generate_recipe(matched_recipes: List[Dict], budget_limit: float = 15.00) -> str:
-    """Generate a new recipe and check if it fits the budget."""
-=======
     
     return recipe_text
 
@@ -95,19 +77,16 @@ def load_extracted_ingredients(json_file: str) -> List[str]:
 
 def generate_recipe(matched_recipes: List[Dict], extracted_ingredients: List[str]) -> str:
     """Generate a new recipe based on matched recipes from database."""
->>>>>>> main
     
     if not matched_recipes:
         raise ValueError("No matched recipes provided")
     if not extracted_ingredients:
         raise ValueError("No extracted image ingredients provided")
-    
+
+    budget_limit = 15.00
     print(f"🤖 Generating creative recipe (Budget Limit: ${budget_limit:.2f})...\n")
-    
-<<<<<<< HEAD
-=======
+
     # Get top recipes and allowed ingredients from image extraction only.
->>>>>>> main
     top_recipes = matched_recipes[:3]
     available_ingredients = extracted_ingredients
     
@@ -206,15 +185,7 @@ def main():
     print("="*70)
     print("🍳 BUDGETBITE RECIPE GENERATOR")
     print("="*70)
-    
-<<<<<<< HEAD
-    if len(sys.argv) < 2:
-        print("Usage: python src/recipe_generator.py <matched_recipes_json> [output_file]")
-        sys.exit(1)
-    
-    input_file = sys.argv[1]
-    output_file = sys.argv[2] if len(sys.argv) > 2 else "generated_recipe.txt"
-=======
+
     parser = argparse.ArgumentParser(
         description="Generate a recipe from matched recipes using image-extracted ingredients.",
     )
@@ -228,15 +199,9 @@ def main():
     args = parser.parse_args()
     input_file = args.matched_recipes_json
     output_file = args.output_file
->>>>>>> main
-    
+
     matched_recipes = load_matched_recipes(input_file)
-    
-<<<<<<< HEAD
-    # You can change the budget_limit value here
-    recipe_text = generate_recipe(matched_recipes, budget_limit=12.50)
-    
-=======
+
     if not matched_recipes:
         print("❌ No matched recipes found. Run retrieval.py first.")
         sys.exit(1)
@@ -248,9 +213,8 @@ def main():
     
     # Step 2: Generate new recipe
     recipe_text = generate_recipe(matched_recipes, extracted_ingredients)
-    
+
     # Step 3: Display recipe
->>>>>>> main
     display_recipe(recipe_text)
     save_generated_recipe(recipe_text, output_file)
     
