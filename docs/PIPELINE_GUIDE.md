@@ -1,36 +1,79 @@
-# BudgetBite Recipe Generation Pipeline
+# BudgetBite Pipeline Guide
 
-## Overview
+## What is the Pipeline?
 
-The main recipe generation pipeline integrates all components of BudgetBite into a single, cohesive API endpoint. It manages:
+BudgetBite's core functionality is a 6-step recipe generation pipeline that processes user ingredients into validated, budget-friendly meal suggestions.
 
-1. **Input Validation & Refusal Handling** - Rejects invalid inputs with clear error messages
-2. **Database Retrieval** - Queries meals table for top-k recipe matches  
-3. **Recipe Generation** - Creates recipes from ingredients (with grounding context)
-4. **Output Validation** - Ensures generated recipes use only input ingredients
-5. **Budget Checking** - Validates cost against user budget (optional)
-6. **Regeneration Loop** - Automatically refines recipes if validation/budget fails
-7. **Error Handling** - Clean error states for all failure cases
+## Pipeline Steps
 
-## Quick Start
+### 1. Input Validation
+- Validates the ingredients list (must not be empty)
+- Checks budget constraints if provided
+- Rejects invalid requests with HTTP 400
 
-### 1. Start the Backend Server
+### 2. Database Retrieval
+- Queries the meals database for recipes matching user ingredients
+- Returns top-5 matches ranked by ingredient overlap
+- Provides grounding context for AI generation
 
-```bash
-cd backend
-python app.py
+### 3. Recipe Generation
+- Uses AI to create a new recipe from available ingredients
+- Incorporates retrieved database recipes as inspiration
+- Currently mocked for testing (returns sample recipe)
+
+### 4. Ingredient Validation
+- Verifies the generated recipe only uses input ingredients
+- Flags any missing or extra ingredients
+- Triggers regeneration if validation fails
+
+### 5. Budget Checking
+- Estimates recipe cost using pricing heuristics or Kroger API
+- Compares against user budget constraint
+- Triggers regeneration if budget exceeded
+
+### 6. Regeneration Loop
+- Automatically retries up to 3 times if validation or budget issues occur
+- Feeds error feedback to improve subsequent generations
+- Returns best result found or partial success
+
+## Pipeline Flow Diagram
+
+```
+User Input (ingredients + budget)
+       ↓
+1. Input Validation
+   └─ Invalid? → HTTP 400 Error
+   └─ Valid? → Continue
+
+2. Database Retrieval
+   └─ Top-5 matching recipes
+
+3. Recipe Generation
+   └─ AI creates new recipe
+
+4. Ingredient Validation
+   └─ Valid? → Continue
+   └─ Invalid? → Regenerate (up to 3x)
+
+5. Budget Checking
+   └─ Within budget? → Continue
+   └─ Over budget? → Regenerate (up to 3x)
+
+6. Success Response
+   └─ HTTP 200 with recipe + validation + budget info
 ```
 
-Server runs on `http://127.0.0.1:5001`
+## API Usage
 
-### 2. Call the Pipeline Endpoint
+### Main Endpoint
+```
+POST /api/pipeline/generate-recipe
+```
 
-**Endpoint:** `POST /api/pipeline/generate-recipe`
-
-**Request:**
+### Request Format
 ```json
 {
-  "ingredients": ["chicken", "tomato", "basil", "olive oil"],
+  "ingredients": ["chicken", "tomato", "garlic"],
   "budget": 15.00,
   "zipCode": "78207",
   "dietaryRestrictions": ["vegetarian"],
@@ -38,318 +81,59 @@ Server runs on `http://127.0.0.1:5001`
 }
 ```
 
-**Response (Success - 200):**
+### Response Format
 ```json
 {
   "success": true,
   "recipe": {
-    "name": "Creative Italian Dish with Chicken",
-    "category": "Italian",
-    "ingredients": ["chicken", "tomato", "basil", "olive oil"],
-    "instructions": "1. Prepare chicken, tomato, basil...",
-    "estimated_price": 12.50,
-    "metadata": {
-      "iteration": 1,
-      "type": "mock",
-      "generated_at": "2026-04-04T..."
-    }
+    "name": "Creative Mixed Dish with Chicken",
+    "ingredients": ["chicken", "tomato", "garlic"],
+    "instructions": "1. Prepare chicken...",
+    "estimated_price": 6.0
   },
   "validation": {
     "is_valid": true,
-    "recipe_ingredients": [...],
-    "missing_ingredients": [],
-    "validation_errors": []
+    "missing_ingredients": []
   },
   "budget_check": {
-    "has_budget_constraint": true,
-    "budget": 15.00,
-    "estimated_cost": 12.50,
     "is_within_budget": true,
-    "message": "Recipe cost ($12.50) is within budget ($15.00)"
+    "message": "Recipe cost ($6.00) is within budget ($15.00)"
   },
   "pipeline_status": "success",
-  "iterations": 1,
-  "retrieved_context_count": 5,
-  "timestamp": "2026-04-04T..."
+  "iterations": 1
 }
 ```
 
-### 3. Run Integration Tests
+## Error Handling
 
+- **400 Bad Request:** Invalid input (empty ingredients, etc.)
+- **202 Partial Success:** Recipe generated but validation/budget issues
+- **500 Server Error:** Pipeline failure
+
+## Testing the Pipeline
+
+### Quick Test
+```bash
+python test_pipeline_quick.py
+```
+
+### Full Test Suite
 ```bash
 cd testing
 python test_pipeline.py
 ```
 
-Tests validate all scenarios:
-- ✅ Basic pipeline with minimal input
-- ✅ With budget constraint
-- ✅ Invalid input rejection  
-- ✅ With dietary restrictions
-- ✅ With pricing lookup (real Kroger API)
-- ✅ Response shape validation
-
-## API Request Fields
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `ingredients` | `string[]` | ✅ Yes | List of available ingredients |
-| `budget` | `number` | Optional | Max spending in USD |
-| `zipCode` | `string` | Optional | For Kroger API real pricing |
-| `dietaryRestrictions` | `string[]` | Optional | E.g. `["vegetarian", "vegan"]` |
-| `cuisine` | `string` | Optional | Preferred cuisine (e.g. "Italian") |
-
-## Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `success` | `boolean` | True if pipeline_status == "success" |
-| `recipe` | `object` | Generated recipe with metadata |
-| `validation` | `object` | Ingredient validation results |
-| `budget_check` | `object` | Budget constraint check results |
-| `pipeline_status` | `string` | One of: `success`, `validation_failed`, `budget_exceeded`, `input_rejected`, `generation_failed`, `error` |
-| `iterations` | `number` | Number of regeneration loops used |
-| `retrieved_context_count` | `number` | Number of database recipes retrieved |
-| `timestamp` | `string` | ISO 8601 UTC timestamp |
-
-## Status Codes
-
-| Code | Scenario |
-|------|----------|
-| **200** | Pipeline succeeded - recipe is valid and within budget |
-| **202** | Recipe generated but validation/budget issues exist (partial success) |
-| **400** | Invalid input - rejected by validation |
-| **500** | Internal pipeline error during generation/validation |
-| **502** | External service error (Kroger API, etc.) |
-
-## Pipeline Architecture
-
-### Step 1: Input Validation
-```python
-validate_pipeline_input(data)
-# Returns: (is_valid: bool, error_msg: str, normalized_data: dict)
+### Manual API Test
+```bash
+curl -X POST http://127.0.0.1:5001/api/pipeline/generate-recipe \
+  -H "Content-Type: application/json" \
+  -d '{"ingredients": ["chicken", "rice"], "budget": 10}'
 ```
 
-**Checks:**
-- ✅ `ingredients` field exists and is non-empty list
-- ✅ All ingredients are non-empty strings
-- ✅ `budget` is non-negative number (if provided)
-- ✅ Sanitizes whitespace and removes duplicates
+## Integration Points
 
-**Failure:** Returns 400 with error message
-
-### Step 2: Database Retrieval
-```python
-retrieve_top_k_recipes(ingredients, k=5)
-# Returns: List[Recipe] - top-k matches ranked by ingredient overlap
-```
-
-**Algorithm:**
-1. Query meals table for all recipes
-2. Count ingredient overlap for each recipe
-3. Score by: `overlap_count / total_ingredients`
-4. Return top-k by score
-
-**Used for:** Grounding context during recipe generation
-
-### Step 3: Recipe Generation (Mocked)
-```python
-generate_recipe_mock(ingredients, retrieved_context, ...)
-# Returns: {name, category, ingredients, instructions, ...}
-```
-
-**Currently:** Mocked with deterministic fake recipes for E2E testing
-
-**Next:** Integrate `src.recipe_generator.generate_recipe_from_context(...)`
-
-### Step 4: Ingredient Validation
-```python
-validate_recipe_output(generated_recipe, input_ingredients)
-# Returns: (is_valid: bool, validation_result: dict)
-```
-
-**Algorithm:**
-1. Extract ingredient list from recipe
-2. For each recipe ingredient, check if it matches any input ingredient
-3. Flag missing ingredients
-4. Return validation status
-
-**Failure:** Recipe uses ingredients not in input list → triggers regeneration
-
-### Step 5: Budget Checking
-```python
-check_budget(recipe, budget, zip_code)
-# Returns: (is_within_budget: bool, budget_check: dict)
-```
-
-**Stages:**
-1. Use quick estimate from `recipe.estimated_price`
-2. (Optional) If zip_code provided: Call Kroger API for real pricing
-
-**Failure:** Recipe cost exceeds budget → triggers regeneration
-
-### Step 6: Regeneration Loop
-```python
-regenerate_with_feedback(original_recipe, validation_result, budget_check, ...)
-```
-
-**Triggers on:**
-- ❌ Validation failed (uses ingredients not in list)
-- ❌ Budget exceeded (cost > budget)
-
-**Max Iterations:** 3 (configurable)
-
-**Feedback:** Previous iteration's errors are passed as context for refinement
-
-## Current Implementation Status
-
-### ✅ Complete
-- [x] Main pipeline endpoint structure
-- [x] Input validation & refusal handling
-- [x] Database retrieval (top-k matching)
-- [x] Ingredient validation logic
-- [x] Budget checking framework
-- [x] Regeneration loop infrastructure
-- [x] Error handling & recovery
-- [x] Response formatting
-- [x] Logging & debugging
-
-### 🔧 In Progress / Next Steps
-
-1. **Integrate Real Recipe Generator**
-   - Currently using mock for E2E testing
-   - Location: `src/recipe_generator.py`
-   - Function: `generate_recipe_from_context(ingredients, context, ...)`
-   - Input: list of ingredients + grounding context
-   - Output: structured recipe dict with ingredients_list
-
-2. **Integrate Real Ingredient Validator**
-   - Currently using simple string matching
-   - Location: `src/validator.py`
-   - Improve confidence score handling
-   - Better ingredient canonicalization
-
-3. **Wire Up Kroger Pricing API**
-   - Currently using heuristic estimates
-   - Location: `backend/kroger_pricing.py`
-   - When zip_code provided: fetch real prices
-   - Update budget check response
-
-4. **Handle Edge Cases**
-   - Recipe generation timeout
-   - API rate limiting
-   - Database connection errors
-   - Invalid API responses
-
-5. **Performance Optimization**
-   - Cache database queries
-   - Parallel API calls where possible
-   - Reduce regeneration loops with better feedback
-
-6. **Testing & Validation**
-   - Run `testing/test_pipeline.py` for E2E tests
-   - Add unit tests for each step
-   - Validate response schemas
-
-## Helper Modules
-
-### `pipeline_helpers.py`
-Utility functions for:
-- Formatting recipes for AI context
-- Extracting ingredients from text
-- Parsing confidence scores
-- Recipe cost estimation
-- Response formatting
-
-### `test_pipeline.py`
-6 test scenarios covering:
-- Basic pipeline
-- Budget constraints
-- Invalid input rejection
-- Dietary restrictions
-- Real pricing lookup
-- Response shape validation
-
-## Configuration
-
-Located in `pipeline_routes.py`:
-
-```python
-MAX_REGENERATION_LOOPS = 3      # Max attempts to generate valid recipe
-TOP_K_RETRIEVED = 5              # Number of database recipes to retrieve
-CONFIDENCE_THRESHOLD = 0.7       # Min confidence for extracted ingredients
-```
-
-## Error Handling
-
-### Input Rejected (400)
-```json
-{
-  "success": false,
-  "error": "ingredients list cannot be empty",
-  "pipeline_status": "input_rejected",
-  "timestamp": "..."
-}
-```
-
-### Generation Failed (500)
-```json
-{
-  "success": false,
-  "error": "Failed to generate recipe",
-  "pipeline_status": "generation_failed",
-  "timestamp": "..."
-}
-```
-
-### Validation Failed (202)
-```json
-{
-  "success": false,
-  "recipe": {...},
-  "validation": {
-    "is_valid": false,
-    "missing_ingredients": ["saffron", "truffle"],
-    "validation_errors": [...]
-  },
-  "pipeline_status": "validation_failed",
-  "timestamp": "..."
-}
-```
-
-## Debugging
-
-Enable verbose logging:
-
-```python
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
-
-Check logs in pipeline_routes.py:
-- Recipe retrieval logs
-- Generation attempts
-- Validation results
-- Budget checks
-- Regeneration decisions
-
-## Integration Checklist
-
-- [ ] Test basic pipeline end-to-end with mocked generator
-- [ ] Integrate `src/recipe_generator.py`
-- [ ] Integrate `src/validator.py` with real confidence scores
-- [ ] Wire up `backend/kroger_pricing.py` for zip code lookups
-- [ ] Add database top-k query optimization
-- [ ] Handle duplicate ingredients in input
-- [ ] Add max ingredients limit
-- [ ] Add recipe complexity scoring
-- [ ] Performance test with large ingredient lists
-- [ ] Load test regeneration loop
-- [ ] Deploy to production
-
-## Next Steps
-
-1. **This iteration:** Confirm pipeline E2E works with mock generator
-2. **Next:** Integrate real recipe generator from `src/recipe_generator.py`
-3. **Then:** Add real ingredient validation with confidence scores
-4. **Finally:** Hook up real pricing from Kroger API
+1. **Recipe Generation:** Replace `generate_recipe_mock()` with real AI
+2. **Ingredient Validation:** Add confidence scores from image analysis
+3. **Pricing:** Integrate Kroger API for real-time costs
+4. **Database:** Optimize queries for large ingredient sets</content>
+<filePath>c:\Users\ericg\OneDrive - Texas A&M University-San Antonio\Spring2026\Budget_Bite\BudgetBite\STARTUP_GUIDE.md
