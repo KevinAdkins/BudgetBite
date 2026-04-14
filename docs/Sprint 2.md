@@ -54,10 +54,10 @@ After Milestone 2, BudgetBite has an impressive full-stack system (React Native 
 ## Definition of Done (Sprint 2)
 
 - [ ] Demo Guide exists with all 3 required flows documented
-- [ ] All 10 test cases have real data (no empty cells)
+- [X] All 10 test cases have real data (no empty cells)
 - [x] Text input path works in addition to camera
 - [x] Budget regeneration loop implemented in code
-- [ ] Validator no longer flags measurement words as unmatched ingredients
+- [X] Validator no longer flags measurement words as unmatched ingredients
 - [x] Port and IP issues resolved
 - [ ] Each team member has code commits this sprint
 
