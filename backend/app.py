@@ -7,6 +7,7 @@ import pull
 import kroger_pricing
 from routes.meal_routes import meal_bp
 from routes.pricing_routes import pricing_bp
+from routes.pipeline_routes import pipeline_bp
 import base64
 import tempfile
 import os
@@ -66,6 +67,7 @@ pull.init_db()
 
 app.register_blueprint(meal_bp, url_prefix='/api')
 app.register_blueprint(pricing_bp, url_prefix='/api')
+app.register_blueprint(pipeline_bp, url_prefix='/api')
 
 @app.route('/')
 def home():
@@ -75,11 +77,18 @@ def home():
         "endpoints": {
             "GET /api/meals": "Get all meals",
             "GET /api/meals/<name>": "Get specific meal",
-            "GET /api/meals/search?name=<name>": "Search for meal",
+            "GET /api/meals/search?name=<name>": "Search for meal (DB + API)",
+            "GET /api/meals/search-by-ingredient?ingredient=<ingredient>&full=true&first=true": "Search by ingredient and optionally return full details for first match",
             "POST /api/analyze": "Analyze fridge image",
-            "POST /api/pricing/ingredients": "Estimate ingredient pricing via blueprint route",
+            "POST /api/analyze-text": "Analyze text ingredients",
+            "POST /api/pricing/ingredients": "Estimate total ingredient cost with Kroger API",
             "POST /api/kroger/pricing/ingredients": "Estimate ingredient pricing via app route",
-            "GET /api/kroger/pricing/strategies": "List allowed Kroger pricing strategies"
+            "GET /api/kroger/pricing/strategies": "List allowed Kroger pricing strategies",
+            "POST /api/pipeline/generate-recipe": "Main pipeline: Generate recipe from ingredients with validation + budget checking",
+            "POST /api/meals": "Add new meal",
+            "PUT /api/meals/<name>": "Update meal",
+            "PATCH /api/meals/<name>/instructions": "Update instructions only",
+            "DELETE /api/meals/<name>": "Delete meal"
         }
     })
 

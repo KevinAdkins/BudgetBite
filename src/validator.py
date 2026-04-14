@@ -248,6 +248,15 @@ def parse_recipe_ingredients(recipe_text: str, valid_ingredients: List[Ingredien
         'oven', 'stove', 'skillet', 'dish', 'bowl', 'place', 'until',
         'about', 'minutes', 'hours', 'stalks', 'cloves', 'bulbs'
     }
+
+    # Fix completed: ignore measurement/descriptor words so they are not
+    measurement_and_descriptor_terms = {
+        'thinly', 'shredded', 'tbsp', 'tsp', 'tablespoon', 'tablespoons',
+        'teaspoon', 'teaspoons', 'cup', 'cups', 'leaf', 'leaves', 'sprig',
+        'sprigs', 'slice', 'slices', 'grated', 'julienned', 'peeled',
+        'cubed', 'crushed', 'crumbled', 'drained', 'reserved'
+    }
+    non_ingredient_terms = cooking_terms | measurement_and_descriptor_terms
     
     # Look for potential unmatched ingredients in the ingredients section only
     unmatched_ingredients = set()
@@ -264,7 +273,7 @@ def parse_recipe_ingredients(recipe_text: str, valid_ingredients: List[Ingredien
             
             for word in words:
                 # Skip if it's a cooking term, measurement, or too short
-                if len(word) <= 3 or word in cooking_terms:
+                if len(word) <= 3 or word in non_ingredient_terms:
                     continue
                     
                 # Skip if it's part of a valid ingredient name

@@ -1,23 +1,23 @@
 """
 Recipe Generator - Uses matched recipes from backend to generate new recipe suggestions
-Takes matched_recipes.json as input and generates creative recipes using Gemini AI
+Takes matched_recipes.json as input and generates creative recipes using Gemini AI.
 """
-from dotenv import load_dotenv
-load_dotenv()
-import json
-import sys
 import argparse
+import json
+import os
+import re
+import sys
 from pathlib import Path
 from typing import List, Dict
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
-import os
+
+load_dotenv()
 
 
 # Gemini client
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
-
 
 def load_matched_recipes(json_file: str) -> List[Dict]:
     """Load matched recipes from retrieval output."""
@@ -32,15 +32,17 @@ def load_matched_recipes(json_file: str) -> List[Dict]:
     print(f"✅ Loaded {len(recipes)} matched recipes\n")
     return recipes
 
-
 def format_recipes_for_prompt(recipes: List[Dict], max_recipes: int = 3) -> str:
     """Format top matched recipe metadata for inspiration-only context."""
     recipe_text = ""
-    
     for i, recipe in enumerate(recipes[:max_recipes], 1):
         recipe_text += f"\n{i}. {recipe['name'].upper()}\n"
         recipe_text += f"   Category: {recipe['category']}\n"
         recipe_text += f"   Match Score: {recipe['match_score']['percentage']}%\n"
+        recipe_text += f"   Ingredients: {recipe.get('ingredients', '')}\n"
+        instructions = str(recipe.get('instructions', ''))
+        recipe_text += f"   Instructions: {instructions[:200]}...\n"
+
     
     return recipe_text
 
@@ -80,58 +82,52 @@ def generate_recipe(matched_recipes: List[Dict], extracted_ingredients: List[str
         raise ValueError("No matched recipes provided")
     if not extracted_ingredients:
         raise ValueError("No extracted image ingredients provided")
-    
-    print("🤖 Generating creative recipe using AI...\n")
-    
+
+    budget_limit = 15.00
+    print(f"🤖 Generating creative recipe (Budget Limit: ${budget_limit:.2f})...\n")
+
     # Get top recipes and allowed ingredients from image extraction only.
     top_recipes = matched_recipes[:3]
     available_ingredients = extracted_ingredients
     
-    # Format context
     recipes_context = format_recipes_for_prompt(top_recipes)
     ingredients_list = "\n".join([f"  • {ing}" for ing in available_ingredients])
     
-    RECIPE_GENERATION_PROMPT = """You are a creative chef and recipe developer.
+    RECIPE_GENERATION_PROMPT = f"""You are a creative chef and recipe developer.
 
-TASK: Create ONE delicious, practical recipe based on the available ingredients and similar recipes from our database.
+TASK: Create ONE delicious, practical recipe based on available ingredients.
 
 RULES:
-1. Use ONLY ingredients from the "Available Ingredients" list
-2. The recipes from our database are for INSPIRATION ONLY - create something new
-3. Focus on the highest-matching recipe's style and techniques
-4. Keep it simple and achievable for home cooks
-5. Provide clear, step-by-step instructions
-6. You may assume salt, pepper, and basic cooking oil are available
-7. Do NOT add ingredients not in the available list
+1. Use ONLY ingredients from the "Available Ingredients" list.
+2. Estimate the "Total Estimated Cost" in USD for the whole meal.
+3. You may assume salt, pepper, and basic cooking oil are available ($0.00 cost).
+4. Do NOT add ingredients not in the list.
 
 OUTPUT FORMAT:
-Recipe Name: [Creative name]
-Category: [e.g., Main Course, Side Dish, etc.]
-Prep Time: [estimated time]
-Servings: [number of servings]
+Recipe Name: [Name]
+Total Estimated Cost: $[Amount]
+Category: [Category]
+Prep Time: [Time]
+Servings: [Number]
 
 Ingredients:
-• [ingredient 1 with quantity]
-• [ingredient 2 with quantity]
-...
+• [List]
 
 Instructions:
-1. [Step 1]
-2. [Step 2]
-...
+1. [Steps]
 
 Chef's Notes:
-[Any helpful tips or variations]
+[Tips]
 """
 
     prompt_content = f"""
-Here are the top matching recipes from our database:
+Here are the top matching recipes:
 {recipes_context}
 
 Available Ingredients:
 {ingredients_list}
 
-Please create a new recipe using these ingredients, inspired by the database recipes above.
+Please create a new recipe and estimate the cost.
 """
 
     try:
@@ -144,44 +140,52 @@ Please create a new recipe using these ingredients, inspired by the database rec
             contents=[prompt_content]
         )
         
-        if response.text is None:
-            raise ValueError("Recipe generation returned no response")
+        recipe_text = response.text.strip()
         
-        generated_recipe = response.text.strip()
-        return generated_recipe
+        # --- BUDGET CHECK LOGIC ---
+        # Search for "$DD.CC" in the AI output
+        cost_match = re.search(r"Total Estimated Cost: \$(\d+\.?\d*)", recipe_text)
+        
+        if cost_match:
+            estimated_cost = float(cost_match.group(1))
+            
+            # THE IF-ELSE STATEMENT
+            if estimated_cost <= budget_limit:
+                status_header = f"✅ BUDGET-FRIENDLY: This meal costs ${estimated_cost:.2f} (Under ${budget_limit:.2f})\n"
+                print(f"💰 Result: Within budget.")
+            else:
+                status_header = f"⚠️ PREMIUM SELECTION: This meal costs ${estimated_cost:.2f} (Exceeds ${budget_limit:.2f})\n"
+                print(f"⚠️ Result: Over budget.")
+        else:
+            status_header = "❓ BUDGET STATUS: Unknown (Cost not detected)\n"
+
+        return status_header + "-"*30 + "\n" + recipe_text
         
     except Exception as e:
         print(f"❌ Error generating recipe: {e}")
         raise
 
-
 def save_generated_recipe(recipe_text: str, output_file: str = "generated_recipe.txt"):
     """Save the generated recipe to a file."""
-    print(f"\n💾 Saving generated recipe to: {output_file}")
-    
+    print(f"\n💾 Saving to: {output_file}")
     with open(output_file, 'w') as f:
         f.write(recipe_text)
-    
     print(f"✅ Recipe saved successfully\n")
-    return output_file
-
 
 def display_recipe(recipe_text: str):
-    """Display the generated recipe in a nice format."""
+    """Display the generated recipe."""
     print("\n" + "="*70)
-    print("🍽️  GENERATED RECIPE")
+    print("🍽️  GENERATED RECIPE RESULTS")
     print("="*70 + "\n")
     print(recipe_text)
     print("\n" + "="*70 + "\n")
-
 
 def main():
     """Main execution function."""
     print("="*70)
     print("🍳 BUDGETBITE RECIPE GENERATOR")
     print("="*70)
-    print()
-    
+
     parser = argparse.ArgumentParser(
         description="Generate a recipe from matched recipes using image-extracted ingredients.",
     )
@@ -195,10 +199,9 @@ def main():
     args = parser.parse_args()
     input_file = args.matched_recipes_json
     output_file = args.output_file
-    
-    # Step 1: Load matched recipes
+
     matched_recipes = load_matched_recipes(input_file)
-    
+
     if not matched_recipes:
         print("❌ No matched recipes found. Run retrieval.py first.")
         sys.exit(1)
@@ -210,19 +213,13 @@ def main():
     
     # Step 2: Generate new recipe
     recipe_text = generate_recipe(matched_recipes, extracted_ingredients)
-    
+
     # Step 3: Display recipe
     display_recipe(recipe_text)
-    
-    # Step 4: Save to file
     save_generated_recipe(recipe_text, output_file)
     
-    print(f"{'='*70}")
-    print(f"✅ Recipe generation complete!")
-    print(f"{'='*70}\n")
-    
+    print(f"✅ Generation complete!")
     return output_file
-
 
 if __name__ == "__main__":
     main()
