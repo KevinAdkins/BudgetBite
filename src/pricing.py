@@ -151,9 +151,10 @@ def parse_csv_ingredients(raw: str) -> list[str]:
 
 def get_pricing_tier(total: float) -> str:
     """Classify total cost into cheap, medium, or expensive tiers."""
+    # Fix completed: corrected boundaries so 25 -> medium and 50 -> expensive.
     if total < 25:
         return "cheap"
-    if total <= 50:
+    if total < 50:
         return "medium"
     return "expensive"
 
