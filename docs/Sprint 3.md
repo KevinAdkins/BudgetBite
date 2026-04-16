@@ -75,7 +75,7 @@ Jorge is the key signal this sprint. Three P0 documentation items were assigned 
 
 Kevin and David carried the engineering in Sprint 2 and continue to own the text-path unification, which is the most technically involved item in this sprint. Alvaro owns the evaluation refresh. Eric should keep the momentum from the refusal flow work with README cleanup, new text-input test cases, and the validator unit test.
 
-Everyone should have a visible commit by Wednesday April 17. If any member has zero commits by Friday April 19, that is the right moment to flag it internally, not on April 28.
+Everyone should have a visible commit by Wednesday April 22. If any member has zero commits by Friday April 24, that is the right moment to flag it internally, not on April 28.
 
 ---
 
