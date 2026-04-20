@@ -1,5 +1,5 @@
 # BudgetBite
-Senior Project
+Senior Project <br>
 An app that can take a picture of what you have and come up with a meal idea.<br>
 The goal is to keep it budget-friendly while recommending you healthy meals to make.
 
@@ -52,7 +52,7 @@ python (or py) backend/seed.py --export-csv
 python (or py) app.py
 ```
 
-The backend API will start running at `http://localhost:5000`
+The backend API will start running at `http://localhost:5001`
 
 You should see a message indicating the Flask server is running.
 
@@ -90,8 +90,8 @@ npx expo start --web --host tunnel
 
 ### 3. Test the API
 You can test if the backend is working by visiting these endpoints in your browser:
-- `http://localhost:5000/` - API information
-- `http://localhost:5000/api/meals` - View all meals (pls let me know if it works)
+- `http://localhost:5001/` - API information
+- `http://localhost:5001/api/meals` - View all meals (pls let me know if it works)
 
 ### 4. Genimi API Setup
 Create a .env file
@@ -99,16 +99,37 @@ Create a .env file
 GEMINI_API_KEY=your-api-key
 ```
 
+### 5. Kroger API Setup
+In the same .env file from the Genimi Setup
+```bash
+KROGER_CLIENT_ID=app-name
+KROGER_CLIENT_SECRET=your-api-key
+KROGER_BASE_URL=https://api-ce.kroger.com
+KROGER_SCOPE=product-scope
+KROGER_ZIP_CODE=zip-code
+```
+
 ## API Endpoints
 The backend provides the following endpoints:
+
+### Meals
 - **GET** `/api/meals` - Get all meals
 - **GET** `/api/meals/<name>` - Get specific meal by name
 - **GET** `/api/meals/search?name=<name>` - Search for meal (checks database and external API)
+
 (In-progress haven't tested yet skeleton code)
 - **POST** `/api/meals` - Add new meal
 - **PUT** `/api/meals/<name>` - Update meal
 - **PATCH** `/api/meals/<name>/instructions` - Update instructions only
 - **DELETE** `/api/meals/<name>` - Delete meal
+
+### Analysis
+- **POST** `/api/analyze` - Analyze fridge image
+
+### Pricing
+- **POST** `/api/pricing/ingredients` - Estimate ingredient pricing via blueprint route
+- **POST** `/api/kroger/pricing/ingredients` - Estimate ingredient pricing via app route
+- **GET** `/api/kroger/pricing/strategies` - List allowed Kroger pricing strategies
 
 ## Troubleshooting
 
@@ -299,7 +320,7 @@ curl http://localhost:5000/api/meals/spaghetti
                      ┌──────────────┐
                      │  Backend API │
                      │ (localhost:  │
-                     │   5000)      │
+                     │   5001)      │
                      └──────┬───────┘
                             │
                             ▼

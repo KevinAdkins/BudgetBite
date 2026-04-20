@@ -20,7 +20,7 @@ export default function Index() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Get Started</Text>
           <Text style={styles.cardSubtext}>
-            Scan barcodes and track your pantry in real time.
+            Scan or type in food items to track your pantry in real time.
           </Text>
           <Link href="/camera" style={styles.button}>
             <Text style={styles.buttonText}>📷 Start Scanning</Text>
