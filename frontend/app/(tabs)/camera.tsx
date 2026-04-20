@@ -19,6 +19,20 @@ import { pantryStore } from "./pantryStore";
 
 const ACCENT = "#4ade80";
 
+type MatchedRecipe = {
+  name: string;
+  category: string;
+  ingredients: string;
+  instructions: string;
+  match_score: { percentage: number };
+};
+
+type AnalysisResult = {
+  ingredients: { name: string; category: string }[];
+  matched_recipes: MatchedRecipe[];
+  generated_recipe?: string;
+};
+
 export default function Camera() {
   const [permission, requestPermission] = useCameraPermissions();
   const ref = useRef<CameraView>(null);
@@ -28,18 +42,18 @@ export default function Camera() {
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [addedIngredients, setAddedIngredients] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<{
-    ingredients: { name: string; category: string }[];
-    matched_recipes: { name: string; match_score: { percentage: number } }[];
-  } | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null,
+  );
+  const [expandedRecipe, setExpandedRecipe] = useState<string | null>(null);
   const [textMode, setTextMode] = useState(false);
   const [ingredientText, setIngredientText] = useState("");
   const [textAnalyzing, setTextAnalyzing] = useState(false);
-  const [textResult, setTextResult] = useState<{
-    ingredients: { name: string; category: string }[];
-    matched_recipes: { name: string; match_score: { percentage: number } }[];
-  } | null>(null);
+  const [textResult, setTextResult] = useState<AnalysisResult | null>(null);
   const [textAddedIngredients, setTextAddedIngredients] = useState(false);
+  const [textExpandedRecipe, setTextExpandedRecipe] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     budgetStore.load().then((t) => {
@@ -96,6 +110,7 @@ export default function Camera() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setAnalysisResult(data);
+      setExpandedRecipe(null);
     } catch (e: any) {
       alert("Analysis failed: " + e.message);
     } finally {
@@ -125,11 +140,87 @@ export default function Camera() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setTextResult(data);
+      setTextExpandedRecipe(null);
     } catch (e: any) {
       alert("Analysis failed: " + e.message);
     } finally {
       setTextAnalyzing(false);
     }
+  };
+
+  const renderRecipeList = (
+    recipes: MatchedRecipe[],
+    expandedName: string | null,
+    setExpanded: (name: string | null) => void,
+  ) => {
+    if (recipes.length === 0) {
+      return <Text style={styles.analysisNone}>No recipes matched</Text>;
+    }
+    return recipes.map((r, i) => {
+      const isExpanded = expandedName === r.name;
+      const ingredientList = r.ingredients
+        .split(",")
+        .map((ing) => ing.trim())
+        .filter(Boolean);
+
+      return (
+        <View key={i} style={styles.recipeCard}>
+          <Pressable
+            style={styles.recipeHeader}
+            onPress={() => setExpanded(isExpanded ? null : r.name)}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={styles.recipeName}>{r.name}</Text>
+              <Text style={styles.recipeCategory}>{r.category}</Text>
+            </View>
+            <View style={{ alignItems: "flex-end", gap: 4 }}>
+              <Text style={styles.recipeScore}>
+                {r.match_score.percentage}%
+              </Text>
+              <Text style={{ color: "#555", fontSize: 12 }}>
+                {isExpanded ? "▲ hide" : "▼ details"}
+              </Text>
+            </View>
+          </Pressable>
+
+          {isExpanded && (
+            <View style={styles.recipeDetails}>
+              <Text style={styles.recipeDetailLabel}>
+                🛒 Ingredients Needed
+              </Text>
+              {ingredientList.map((ing, j) => (
+                <Text key={j} style={styles.recipeDetailItem}>
+                  • {ing}
+                </Text>
+              ))}
+              <Text style={[styles.recipeDetailLabel, { marginTop: 12 }]}>
+                📋 Instructions
+              </Text>
+              <Text style={styles.recipeDetailText}>{r.instructions}</Text>
+
+              <Pressable
+                style={styles.useRecipeBtn}
+                onPress={() => {
+                  ingredientList.forEach((ing) => {
+                    pantryStore.addItem("recipe", ing);
+                  });
+                  pantryStore.saveRecipe(
+                    r.name,
+                    ingredientList,
+                    r.instructions,
+                  );
+                  alert(
+                    `✓ Added ${ingredientList.length} ingredients from "${r.name}" to your pantry!`,
+                  );
+                }}
+              >
+                <Text style={styles.useRecipeBtnText}>🛒 Use This Recipe</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
+      );
+    });
   };
 
   const renderTextMode = () => (
@@ -196,17 +287,10 @@ export default function Camera() {
               {textResult.ingredients.map((i) => i.name).join(", ")}
             </Text>
             <Text style={styles.analysisTitle}>🍽️ Matched Recipes</Text>
-            {textResult.matched_recipes.length === 0 ? (
-              <Text style={styles.analysisNone}>No recipes matched</Text>
-            ) : (
-              textResult.matched_recipes.map((r, i) => (
-                <View key={i} style={styles.recipeRow}>
-                  <Text style={styles.recipeName}>{r.name}</Text>
-                  <Text style={styles.recipeScore}>
-                    {r.match_score.percentage}%
-                  </Text>
-                </View>
-              ))
+            {renderRecipeList(
+              textResult.matched_recipes,
+              textExpandedRecipe,
+              setTextExpandedRecipe,
             )}
             <View style={styles.resultButtons}>
               <Pressable
@@ -235,6 +319,7 @@ export default function Camera() {
                 setTextResult(null);
                 setIngredientText("");
                 setTextAddedIngredients(false);
+                setTextExpandedRecipe(null);
                 setTextMode(false);
               }}
             >
@@ -289,38 +374,39 @@ export default function Camera() {
 
   const renderPicture = (uri: string) => (
     <View style={styles.previewContainer}>
-      <Image
-        source={{ uri }}
-        contentFit="contain"
-        style={styles.previewImage}
-      />
-
       {!analysisResult && (
-        <View style={styles.previewButtons}>
-          <Pressable
-            style={styles.previewBtn}
-            onPress={() => {
-              setUri(null);
-              setAnalysisResult(null);
-              setAddedIngredients(false);
-            }}
-          >
-            <Text style={styles.previewBtnText}>📷 Retake</Text>
-          </Pressable>
-          <Pressable
-            style={[
-              styles.previewBtn,
-              styles.previewBtnAccent,
-              analyzing && { opacity: 0.6 },
-            ]}
-            onPress={() => setShowBudgetModal(true)}
-            disabled={analyzing}
-          >
-            <Text style={[styles.previewBtnText, { color: "#000" }]}>
-              {analyzing ? "⏳ Analyzing..." : "🤖 Analyze Food"}
-            </Text>
-          </Pressable>
-        </View>
+        <>
+          <Image
+            source={{ uri }}
+            contentFit="contain"
+            style={styles.previewImage}
+          />
+          <View style={styles.previewButtons}>
+            <Pressable
+              style={styles.previewBtn}
+              onPress={() => {
+                setUri(null);
+                setAnalysisResult(null);
+                setAddedIngredients(false);
+              }}
+            >
+              <Text style={styles.previewBtnText}>📷 Retake</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.previewBtn,
+                styles.previewBtnAccent,
+                analyzing && { opacity: 0.6 },
+              ]}
+              onPress={() => setShowBudgetModal(true)}
+              disabled={analyzing}
+            >
+              <Text style={[styles.previewBtnText, { color: "#000" }]}>
+                {analyzing ? "⏳ Analyzing..." : "🤖 Analyze Food"}
+              </Text>
+            </Pressable>
+          </View>
+        </>
       )}
 
       {analyzing && (
@@ -335,23 +421,35 @@ export default function Camera() {
       )}
 
       {analysisResult && (
-        <View style={styles.analysisCard}>
+        <ScrollView
+          style={{ width: "100%", flex: 1 }}
+          contentContainerStyle={styles.analysisCard}
+          nestedScrollEnabled
+        >
           <Text style={styles.analysisTitle}>🥘 Ingredients Found</Text>
           <Text style={styles.analysisIngredients}>
             {analysisResult.ingredients.map((i) => i.name).join(", ")}
           </Text>
           <Text style={styles.analysisTitle}>🍽️ Matched Recipes</Text>
-          {analysisResult.matched_recipes.length === 0 ? (
-            <Text style={styles.analysisNone}>No recipes matched</Text>
-          ) : (
-            analysisResult.matched_recipes.map((r, i) => (
-              <View key={i} style={styles.recipeRow}>
-                <Text style={styles.recipeName}>{r.name}</Text>
-                <Text style={styles.recipeScore}>
-                  {r.match_score.percentage}%
-                </Text>
-              </View>
-            ))
+          {renderRecipeList(
+            analysisResult.matched_recipes,
+            expandedRecipe,
+            setExpandedRecipe,
+          )}
+          {analysisResult.generated_recipe && (
+            <View style={{ marginTop: 12 }}>
+              <Text style={styles.analysisTitle}>🍳 Generated Recipe</Text>
+              <Text
+                style={{
+                  color: "#ccc",
+                  fontSize: 13,
+                  lineHeight: 20,
+                  marginTop: 6,
+                }}
+              >
+                {analysisResult.generated_recipe}
+              </Text>
+            </View>
           )}
           <View style={styles.resultButtons}>
             <Pressable
@@ -380,11 +478,12 @@ export default function Camera() {
               setUri(null);
               setAnalysisResult(null);
               setAddedIngredients(false);
+              setExpandedRecipe(null);
             }}
           >
             <Text style={styles.previewBtnText}>📷 Take Another</Text>
           </Pressable>
-        </View>
+        </ScrollView>
       )}
 
       <Modal
@@ -549,15 +648,37 @@ const styles = StyleSheet.create({
   },
   analysisIngredients: { color: "#ccc", fontSize: 13, lineHeight: 20 },
   analysisNone: { color: "#555", fontSize: 13 },
-  recipeRow: {
+  recipeCard: {
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    marginTop: 8,
+    overflow: "hidden",
+  },
+  recipeHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#2a2a3e",
+    alignItems: "center",
+    padding: 14,
   },
-  recipeName: { color: "#fff", fontSize: 14, fontWeight: "500" },
+  recipeName: { color: "#fff", fontSize: 14, fontWeight: "600" },
+  recipeCategory: { color: "#555", fontSize: 12, marginTop: 2 },
   recipeScore: { color: ACCENT, fontSize: 14, fontWeight: "bold" },
+  recipeDetails: {
+    padding: 14,
+    paddingTop: 0,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.06)",
+  },
+  recipeDetailLabel: {
+    color: ACCENT,
+    fontWeight: "600",
+    fontSize: 13,
+    marginBottom: 6,
+  },
+  recipeDetailItem: { color: "#ccc", fontSize: 13, lineHeight: 22 },
+  recipeDetailText: { color: "#ccc", fontSize: 13, lineHeight: 20 },
   resultButtons: { flexDirection: "row", gap: 12, marginTop: 20 },
   addButton: {
     flex: 1,
@@ -625,5 +746,16 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   textButtons: { flexDirection: "row", gap: 12 },
+  useRecipeBtn: {
+    marginTop: 16,
+    backgroundColor: ACCENT,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  useRecipeBtnText: {
+    color: "#000",
+    fontWeight: "bold",
+    fontSize: 14,
+  },
 });
-
