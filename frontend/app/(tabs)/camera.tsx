@@ -31,6 +31,18 @@ type AnalysisResult = {
   ingredients: { name: string; category: string }[];
   matched_recipes: MatchedRecipe[];
   generated_recipe?: string;
+  generated_recipe_pricing?: {
+    estimatedTotal?: number;
+    subtotal?: number;
+  } | null;
+  generated_recipe_pricing_ingredients?: string[];
+  recipe_over_budget?: boolean;
+  recipe_under_budget?: boolean;
+  budget_limit?: number | null;
+  generation_attempts?: number;
+  regeneration_requested?: boolean;
+  regeneration_prompt?: string | null;
+  can_regenerate?: boolean;
 };
 
 export default function Camera() {
@@ -147,6 +159,181 @@ export default function Camera() {
       setTextAnalyzing(false);
     }
   };
+
+  const formatCurrency = (value?: number | null) => {
+    if (typeof value !== "number" || Number.isNaN(value)) {
+      return null;
+    }
+    return `$${value.toFixed(2)}`;
+  };
+
+  const getEstimatedTotal = (result: AnalysisResult) => {
+    const pricing = result.generated_recipe_pricing;
+    if (!pricing) return null;
+    return pricing.estimatedTotal ?? pricing.subtotal ?? null;
+  };
+
+  const renderBudgetSummary = (result: AnalysisResult) => {
+    const estimatedTotal = getEstimatedTotal(result);
+    const budgetLimit = formatCurrency(result.budget_limit ?? null);
+    const estimatedLabel = formatCurrency(estimatedTotal);
+    const statusLabel = result.recipe_over_budget
+      ? "Over budget"
+      : result.recipe_under_budget
+        ? "Below target range"
+        : estimatedTotal !== null
+          ? "Within budget"
+          : "Not priced yet";
+
+    return (
+      <View style={styles.budgetSummaryCard}>
+        <Text style={styles.budgetSummaryTitle}>💰 Budget Check</Text>
+        <Text style={styles.budgetSummaryStatus}>{statusLabel}</Text>
+
+        <View style={styles.budgetSummaryRow}>
+          <Text style={styles.budgetSummaryLabel}>Estimated total</Text>
+          <Text style={styles.budgetSummaryValue}>
+            {estimatedLabel ?? "Unavailable"}
+          </Text>
+        </View>
+
+        <View style={styles.budgetSummaryRow}>
+          <Text style={styles.budgetSummaryLabel}>Budget limit</Text>
+          <Text style={styles.budgetSummaryValue}>
+            {budgetLimit ?? "No upper limit"}
+          </Text>
+        </View>
+
+        <View style={styles.budgetSummaryRow}>
+          <Text style={styles.budgetSummaryLabel}>Generation attempts</Text>
+          <Text style={styles.budgetSummaryValue}>
+            {typeof result.generation_attempts === "number"
+              ? String(result.generation_attempts)
+              : "0"}
+          </Text>
+        </View>
+
+        {result.regeneration_prompt ? (
+          <Text style={styles.budgetSummaryPrompt}>
+            {result.regeneration_prompt}
+          </Text>
+        ) : null}
+
+        {result.can_regenerate ? (
+          <Text style={styles.budgetSummaryHint}>
+            You can regenerate this recipe with a higher attempt limit.
+          </Text>
+        ) : null}
+      </View>
+    );
+  };
+
+  const sanitizeGeneratedRecipe = (recipeText?: string) => {
+    if (!recipeText) return "";
+    return recipeText
+      .split("\n")
+      .filter((line) => {
+        const normalized = line.trim().toLowerCase();
+        if (!normalized) return true;
+        if (normalized.startsWith("total estimated cost:")) return false;
+        if (normalized.includes("budget-friendly:")) return false;
+        if (normalized.includes("premium selection:")) return false;
+        if (normalized.startsWith("------------------------------"))
+          return false;
+        return true;
+      })
+      .join("\n")
+      .trim();
+  };
+
+  const parseGeneratedRecipe = (recipeText?: string) => {
+    const sanitized = sanitizeGeneratedRecipe(recipeText);
+    if (!sanitized) return null;
+
+    const lines = sanitized
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    const sectionIndex = (prefix: string) =>
+      lines.findIndex((line) => line.toLowerCase().startsWith(prefix));
+
+    const nameLine = lines.find((line) =>
+      line.toLowerCase().startsWith("recipe name:"),
+    );
+    const name = nameLine
+      ? nameLine.split(":").slice(1).join(":").trim()
+      : "Generated Recipe";
+
+    const ingredientsStart = sectionIndex("ingredients:");
+    const instructionsStart = sectionIndex("instructions:");
+    const notesStart = sectionIndex("chef's notes:");
+
+    const ingredientsEnd =
+      instructionsStart > -1
+        ? instructionsStart
+        : notesStart > -1
+          ? notesStart
+          : lines.length;
+
+    const instructionsEnd = notesStart > -1 ? notesStart : lines.length;
+
+    const ingredients =
+      ingredientsStart > -1
+        ? lines
+            .slice(ingredientsStart + 1, ingredientsEnd)
+            .map((line) =>
+              line.replace(/^\s*(?:[•*-]\s+|\d+[.)]\s+)?/, "").trim(),
+            )
+            .filter(Boolean)
+        : [];
+
+    const instructions =
+      instructionsStart > -1
+        ? lines
+            .slice(instructionsStart + 1, instructionsEnd)
+            .map((line) =>
+              line.replace(/^\s*(?:[•*-]\s+|\d+[.)]\s+)?/, "").trim(),
+            )
+            .filter(Boolean)
+            .join("\n")
+        : "";
+
+    if (!ingredients.length || !instructions) {
+      return null;
+    }
+
+    return { name, ingredients, instructions };
+  };
+
+  const saveGeneratedRecipe = (
+    result: AnalysisResult,
+    markSaved: (value: boolean) => void,
+    alreadySaved: boolean,
+  ) => {
+    if (alreadySaved) return;
+
+    const parsedRecipe = parseGeneratedRecipe(result.generated_recipe);
+    if (!parsedRecipe) {
+      return;
+    }
+
+    parsedRecipe.ingredients.forEach((ingredient) => {
+      pantryStore.addItem("recipe", ingredient);
+    });
+    pantryStore.saveRecipe(
+      parsedRecipe.name,
+      parsedRecipe.ingredients,
+      parsedRecipe.instructions,
+    );
+    markSaved(true);
+    alert(
+      `✓ Saved \"${parsedRecipe.name}\" with ${parsedRecipe.ingredients.length} ingredients to pantry!`,
+    );
+  };
+
+  const hasSavableGeneratedRecipe = (result: AnalysisResult) =>
+    Boolean(parseGeneratedRecipe(result.generated_recipe));
 
   const renderRecipeList = (
     recipes: MatchedRecipe[],
@@ -286,33 +473,52 @@ export default function Camera() {
             <Text style={styles.analysisIngredients}>
               {textResult.ingredients.map((i) => i.name).join(", ")}
             </Text>
+            {renderBudgetSummary(textResult)}
             <Text style={styles.analysisTitle}>🍽️ Matched Recipes</Text>
             {renderRecipeList(
               textResult.matched_recipes,
               textExpandedRecipe,
               setTextExpandedRecipe,
             )}
-            <View style={styles.resultButtons}>
-              <Pressable
-                style={[
-                  styles.addButton,
-                  textAddedIngredients && styles.addButtonDone,
-                ]}
-                onPress={() => {
-                  if (textAddedIngredients) return;
-                  textResult.ingredients.forEach((ing) => {
-                    pantryStore.addItem(ing.category, ing.name);
-                  });
-                  setTextAddedIngredients(true);
-                }}
-              >
-                <Text style={styles.addButtonText}>
-                  {textAddedIngredients
-                    ? "✓ Added to Pantry!"
-                    : "Add Ingredients to Pantry"}
+            {textResult.generated_recipe ? (
+              <View style={{ marginTop: 12 }}>
+                <Text style={styles.analysisTitle}>🍳 Generated Recipe</Text>
+                <Text
+                  style={{
+                    color: "#ccc",
+                    fontSize: 13,
+                    lineHeight: 20,
+                    marginTop: 6,
+                  }}
+                >
+                  {sanitizeGeneratedRecipe(textResult.generated_recipe)}
                 </Text>
-              </Pressable>
-            </View>
+              </View>
+            ) : null}
+            {hasSavableGeneratedRecipe(textResult) ? (
+              <View style={styles.resultButtons}>
+                <Pressable
+                  style={[
+                    styles.addButton,
+                    textAddedIngredients && styles.addButtonDone,
+                  ]}
+                  onPress={() =>
+                    saveGeneratedRecipe(
+                      textResult,
+                      setTextAddedIngredients,
+                      textAddedIngredients,
+                    )
+                  }
+                  disabled={textAddedIngredients}
+                >
+                  <Text style={styles.addButtonText}>
+                    {textAddedIngredients
+                      ? "✓ Generated Recipe Saved!"
+                      : "Save Generated Recipe"}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
             <Pressable
               style={[styles.previewBtn, { marginTop: 8 }]}
               onPress={() => {
@@ -447,31 +653,34 @@ export default function Camera() {
                   marginTop: 6,
                 }}
               >
-                {analysisResult.generated_recipe}
+                {sanitizeGeneratedRecipe(analysisResult.generated_recipe)}
               </Text>
             </View>
           )}
-          <View style={styles.resultButtons}>
-            <Pressable
-              style={[
-                styles.addButton,
-                addedIngredients && styles.addButtonDone,
-              ]}
-              onPress={() => {
-                if (addedIngredients) return;
-                analysisResult.ingredients.forEach((ing) => {
-                  pantryStore.addItem(ing.category, ing.name);
-                });
-                setAddedIngredients(true);
-              }}
-            >
-              <Text style={styles.addButtonText}>
-                {addedIngredients
-                  ? "✓ Added to Pantry!"
-                  : "Add Ingredients to Pantry"}
-              </Text>
-            </Pressable>
-          </View>
+          {hasSavableGeneratedRecipe(analysisResult) ? (
+            <View style={styles.resultButtons}>
+              <Pressable
+                style={[
+                  styles.addButton,
+                  addedIngredients && styles.addButtonDone,
+                ]}
+                onPress={() =>
+                  saveGeneratedRecipe(
+                    analysisResult,
+                    setAddedIngredients,
+                    addedIngredients,
+                  )
+                }
+                disabled={addedIngredients}
+              >
+                <Text style={styles.addButtonText}>
+                  {addedIngredients
+                    ? "✓ Generated Recipe Saved!"
+                    : "Save Generated Recipe"}
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
           <Pressable
             style={[styles.previewBtn, { marginTop: 8 }]}
             onPress={() => {
@@ -648,6 +857,34 @@ const styles = StyleSheet.create({
   },
   analysisIngredients: { color: "#ccc", fontSize: 13, lineHeight: 20 },
   analysisNone: { color: "#555", fontSize: 13 },
+  budgetSummaryCard: {
+    marginTop: 8,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    gap: 10,
+  },
+  budgetSummaryTitle: {
+    color: ACCENT,
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  budgetSummaryStatus: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  budgetSummaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  budgetSummaryLabel: { color: "#888", fontSize: 13 },
+  budgetSummaryValue: { color: "#fff", fontSize: 13, fontWeight: "600" },
+  budgetSummaryPrompt: { color: "#ccc", fontSize: 12, lineHeight: 18 },
+  budgetSummaryHint: { color: ACCENT, fontSize: 12, lineHeight: 18 },
   recipeCard: {
     backgroundColor: "rgba(255,255,255,0.04)",
     borderRadius: 12,
