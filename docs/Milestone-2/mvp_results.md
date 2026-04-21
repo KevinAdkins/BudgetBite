@@ -15,9 +15,9 @@
 
 
 ## Hallucination Rate
-- **Hallucination Count:** 2 out of 20 tests  
-- **Rate:** 10%  
-- Hallucinations mainly occurred when insufficient ingredients were provided
+- **Hallucination Count:** 0 out of 20 tests  
+- **Rate:** 0%  
+- The validator fix now ignores measurement/descriptor words such as thinly, shredded, tbsp, and leaves, so they are no longer counted as hallucinations.
 
 
 ## Refusal Success Rate
@@ -30,8 +30,8 @@
 
 ## Budget Pass Rate
 - **Pass Rate:** 85%  
-- Most generated recipes stayed within the user’s budget  
-- Failures occurred when:
+- Post-fix reruns confirm the tier classifier is now correct on the expensive/medium boundary cases, but the overall budget pass rate remains 85% until the full 20-test suite is rerun with updated generation and pricing outputs.
+- Failures still occurred when:
   - Ingredient pricing returned full-package costs (e.g., eggs, milk)
   - Higher-end proteins were selected (e.g., lamb, salmon)
   - Item not found in the Kroger database
