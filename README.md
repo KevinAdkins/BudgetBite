@@ -93,7 +93,7 @@ You can test if the backend is working by visiting these endpoints in your brows
 - `http://localhost:5001/` - API information
 - `http://localhost:5001/api/meals` - View all meals (pls let me know if it works)
 
-### 4. Genimi API Setup
+### 4. Gemini API Setup
 Create a .env file
 ```bash
 GEMINI_API_KEY=your-api-key
