@@ -1,97 +1,77 @@
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { useRef, useState, useEffect } from "react";
-import { budgetStore, BUDGET_TIERS, BudgetTier } from "@/utils/budgetStore";
+import { budgetStore, BUDGET_TIERS, BudgetTier } from "./budgetStore";
 import {
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
-  Animated,
   Modal,
   Button,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Image } from "expo-image";
-import { pantryStore } from "@/utils/pantryStore";
+import { pantryStore } from "./pantryStore";
 
 const ACCENT = "#4ade80";
+
+type MatchedRecipe = {
+  name: string;
+  category: string;
+  ingredients: string;
+  instructions: string;
+  match_score: { percentage: number };
+};
+
+type AnalysisResult = {
+  ingredients: { name: string; category: string }[];
+  matched_recipes: MatchedRecipe[];
+  generated_recipe?: string;
+  generated_recipe_pricing?: {
+    estimatedTotal?: number;
+    subtotal?: number;
+  } | null;
+  generated_recipe_pricing_ingredients?: string[];
+  recipe_over_budget?: boolean;
+  recipe_under_budget?: boolean;
+  budget_limit?: number | null;
+  generation_attempts?: number;
+  regeneration_requested?: boolean;
+  regeneration_prompt?: string | null;
+  can_regenerate?: boolean;
+};
 
 export default function Camera() {
   const [permission, requestPermission] = useCameraPermissions();
   const ref = useRef<CameraView>(null);
   const [uri, setUri] = useState<string | null>(null);
   const [facing, setFacing] = useState<CameraType>("back");
-  const [scanned, setScanned] = useState(false);
-  const [scanMode, setScanMode] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [budgetTier, setBudgetTier] = useState<BudgetTier | null>(null);
   const [showBudgetModal, setShowBudgetModal] = useState(false);
-  const [scanResult, setScanResult] = useState<{
-    type: string;
-    data: string;
-  } | null>(null);
-  const [added, setAdded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [addedIngredients, setAddedIngredients] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<{
-    ingredients: { name: string; category: string }[];
-    matched_recipes: { name: string; match_score: { percentage: number } }[];
-    generated_recipe?: string | null;
-    generated_recipe_pricing?: {
-      estimatedTotal?: number;
-      subtotal?: number;
-      pricedCount?: number;
-      requestedCount?: number;
-    } | null;
-    generated_recipe_pricing_ingredients?: string[];
-    generated_recipe_pricing_error?: string | null;
-    recipe_generation_error?: string | null;
-  } | null>(null);
-
-  const sweepAnim = useRef(new Animated.Value(0)).current;
-  const slideUp = useRef(new Animated.Value(300)).current;
-
-  useEffect(() => {
-    if (scanMode && !scanned) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(sweepAnim, {
-            toValue: 1,
-            duration: 1800,
-            useNativeDriver: true,
-          }),
-          Animated.timing(sweepAnim, {
-            toValue: 0,
-            duration: 1800,
-            useNativeDriver: true,
-          }),
-        ]),
-      ).start();
-    } else {
-      sweepAnim.stopAnimation();
-      sweepAnim.setValue(0);
-    }
-  }, [scanMode, scanned]);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null,
+  );
+  const [expandedRecipe, setExpandedRecipe] = useState<string | null>(null);
+  const [textMode, setTextMode] = useState(false);
+  const [ingredientText, setIngredientText] = useState("");
+  const [textAnalyzing, setTextAnalyzing] = useState(false);
+  const [textResult, setTextResult] = useState<AnalysisResult | null>(null);
+  const [textAddedIngredients, setTextAddedIngredients] = useState(false);
+  const [textExpandedRecipe, setTextExpandedRecipe] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     budgetStore.load().then((t) => {
       if (t) setBudgetTier(t);
     });
   }, []);
-
-  useEffect(() => {
-    if (scanResult) {
-      Animated.spring(slideUp, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 80,
-        friction: 12,
-      }).start();
-    } else {
-      slideUp.setValue(300);
-    }
-  }, [scanResult]);
 
   if (!permission) return null;
 
@@ -105,35 +85,6 @@ export default function Camera() {
       </View>
     );
   }
-
-  const handleBarcodeScanned = ({
-    type,
-    data,
-  }: {
-    type: string;
-    data: string;
-  }) => {
-    if (scanned) return;
-    setScanned(true);
-    setScanResult({ type, data });
-    setAdded(false);
-  };
-
-  const handleAddToPantry = () => {
-    if (!scanResult || added) return;
-    pantryStore.addItem(scanResult.type, scanResult.data);
-    setAdded(true);
-  };
-
-  const handleScanAgain = () => {
-    setScanResult(null);
-    setAdded(false);
-    setScanMode(false);
-    setTimeout(() => {
-      setScanMode(true);
-      setScanned(false);
-    }, 300);
-  };
 
   const takePicture = async () => {
     const photo = await ref.current?.takePictureAsync();
@@ -159,17 +110,19 @@ export default function Camera() {
         reader.readAsDataURL(blob);
       });
 
-      // Use environment variable for API URL
-      const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5001";
-      const res = await fetch(`${apiUrl}/api/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64, budget_tier: tier }),
-      });
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/analyze`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: base64, budget_tier: tier }),
+        },
+      );
 
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setAnalysisResult(data);
+      setExpandedRecipe(null);
     } catch (e: any) {
       alert("Analysis failed: " + e.message);
     } finally {
@@ -177,43 +130,466 @@ export default function Camera() {
     }
   };
 
-  const capturePhoto = async () => {
-    const photo = await ref.current?.takePictureAsync();
-    if (photo?.uri) {
-      setUri(photo.uri);
+  const analyzeText = async () => {
+    if (!ingredientText.trim()) {
+      alert("Please enter some ingredients first.");
+      return;
+    }
+    setTextAnalyzing(true);
+    try {
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/analyze-text`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ingredients: ingredientText,
+            budget_tier: budgetTier || "tier1",
+          }),
+        },
+      );
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setTextResult(data);
+      setTextExpandedRecipe(null);
+    } catch (e: any) {
+      alert("Analysis failed: " + e.message);
+    } finally {
+      setTextAnalyzing(false);
     }
   };
 
-  const pickImage = async () => {
-    // Use expo-image-picker for uploading from gallery
-    const { launchImageLibraryAsync } = await import('expo-image-picker');
-    const result = await launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: false,
-      quality: 1,
+  const formatCurrency = (value?: number | null) => {
+    if (typeof value !== "number" || Number.isNaN(value)) {
+      return null;
+    }
+    return `$${value.toFixed(2)}`;
+  };
+
+  const getEstimatedTotal = (result: AnalysisResult) => {
+    const pricing = result.generated_recipe_pricing;
+    if (!pricing) return null;
+    return pricing.estimatedTotal ?? pricing.subtotal ?? null;
+  };
+
+  const renderBudgetSummary = (result: AnalysisResult) => {
+    const estimatedTotal = getEstimatedTotal(result);
+    const budgetLimit = formatCurrency(result.budget_limit ?? null);
+    const estimatedLabel = formatCurrency(estimatedTotal);
+    const statusLabel = result.recipe_over_budget
+      ? "Over budget"
+      : result.recipe_under_budget
+        ? "Below target range"
+        : estimatedTotal !== null
+          ? "Within budget"
+          : "Not priced yet";
+
+    return (
+      <View style={styles.budgetSummaryCard}>
+        <Text style={styles.budgetSummaryTitle}>💰 Budget Check</Text>
+        <Text style={styles.budgetSummaryStatus}>{statusLabel}</Text>
+
+        <View style={styles.budgetSummaryRow}>
+          <Text style={styles.budgetSummaryLabel}>Estimated total</Text>
+          <Text style={styles.budgetSummaryValue}>
+            {estimatedLabel ?? "Unavailable"}
+          </Text>
+        </View>
+
+        <View style={styles.budgetSummaryRow}>
+          <Text style={styles.budgetSummaryLabel}>Budget limit</Text>
+          <Text style={styles.budgetSummaryValue}>
+            {budgetLimit ?? "No upper limit"}
+          </Text>
+        </View>
+
+        <View style={styles.budgetSummaryRow}>
+          <Text style={styles.budgetSummaryLabel}>Generation attempts</Text>
+          <Text style={styles.budgetSummaryValue}>
+            {typeof result.generation_attempts === "number"
+              ? String(result.generation_attempts)
+              : "0"}
+          </Text>
+        </View>
+
+        {result.regeneration_prompt ? (
+          <Text style={styles.budgetSummaryPrompt}>
+            {result.regeneration_prompt}
+          </Text>
+        ) : null}
+
+        {result.can_regenerate ? (
+          <Text style={styles.budgetSummaryHint}>
+            You can regenerate this recipe with a higher attempt limit.
+          </Text>
+        ) : null}
+      </View>
+    );
+  };
+
+  const sanitizeGeneratedRecipe = (recipeText?: string) => {
+    if (!recipeText) return "";
+    return recipeText
+      .split("\n")
+      .filter((line) => {
+        const normalized = line.trim().toLowerCase();
+        if (!normalized) return true;
+        if (normalized.startsWith("total estimated cost:")) return false;
+        if (normalized.includes("budget-friendly:")) return false;
+        if (normalized.includes("premium selection:")) return false;
+        if (normalized.startsWith("------------------------------"))
+          return false;
+        return true;
+      })
+      .join("\n")
+      .trim();
+  };
+
+  const parseGeneratedRecipe = (recipeText?: string) => {
+    const sanitized = sanitizeGeneratedRecipe(recipeText);
+    if (!sanitized) return null;
+
+    const lines = sanitized
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    const sectionIndex = (prefix: string) =>
+      lines.findIndex((line) => line.toLowerCase().startsWith(prefix));
+
+    const nameLine = lines.find((line) =>
+      line.toLowerCase().startsWith("recipe name:"),
+    );
+    const name = nameLine
+      ? nameLine.split(":").slice(1).join(":").trim()
+      : "Generated Recipe";
+
+    const ingredientsStart = sectionIndex("ingredients:");
+    const instructionsStart = sectionIndex("instructions:");
+    const notesStart = sectionIndex("chef's notes:");
+
+    const ingredientsEnd =
+      instructionsStart > -1
+        ? instructionsStart
+        : notesStart > -1
+          ? notesStart
+          : lines.length;
+
+    const instructionsEnd = notesStart > -1 ? notesStart : lines.length;
+
+    const ingredients =
+      ingredientsStart > -1
+        ? lines
+            .slice(ingredientsStart + 1, ingredientsEnd)
+            .map((line) =>
+              line.replace(/^\s*(?:[•*-]\s+|\d+[.)]\s+)?/, "").trim(),
+            )
+            .filter(Boolean)
+        : [];
+
+    const instructions =
+      instructionsStart > -1
+        ? lines
+            .slice(instructionsStart + 1, instructionsEnd)
+            .map((line) =>
+              line.replace(/^\s*(?:[•*-]\s+|\d+[.)]\s+)?/, "").trim(),
+            )
+            .filter(Boolean)
+            .join("\n")
+        : "";
+
+    if (!ingredients.length || !instructions) {
+      return null;
+    }
+
+    return { name, ingredients, instructions };
+  };
+
+  const saveGeneratedRecipe = (
+    result: AnalysisResult,
+    markSaved: (value: boolean) => void,
+    alreadySaved: boolean,
+  ) => {
+    if (alreadySaved) return;
+
+    const parsedRecipe = parseGeneratedRecipe(result.generated_recipe);
+    if (!parsedRecipe) {
+      return;
+    }
+
+    parsedRecipe.ingredients.forEach((ingredient) => {
+      pantryStore.addItem("recipe", ingredient);
     });
-
-    if (!result.canceled && result.assets[0]) {
-      setUri(result.assets[0].uri);
-    }
+    pantryStore.saveRecipe(
+      parsedRecipe.name,
+      parsedRecipe.ingredients,
+      parsedRecipe.instructions,
+    );
+    markSaved(true);
+    alert(
+      `✓ Saved \"${parsedRecipe.name}\" with ${parsedRecipe.ingredients.length} ingredients to pantry!`,
+    );
   };
 
-  const renderPicture = (uri: string) => (
-    <View style={{ flex: 1, backgroundColor: "#000" }}>
-      <ScrollView 
-        style={styles.previewContainer}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        <Image
-          source={{ uri }}
-          contentFit="contain"
-          style={styles.previewImage}
+  const hasSavableGeneratedRecipe = (result: AnalysisResult) =>
+    Boolean(parseGeneratedRecipe(result.generated_recipe));
+
+  const renderRecipeList = (
+    recipes: MatchedRecipe[],
+    expandedName: string | null,
+    setExpanded: (name: string | null) => void,
+  ) => {
+    if (recipes.length === 0) {
+      return <Text style={styles.analysisNone}>No recipes matched</Text>;
+    }
+    return recipes.map((r, i) => {
+      const isExpanded = expandedName === r.name;
+      const ingredientList = r.ingredients
+        .split(",")
+        .map((ing) => ing.trim())
+        .filter(Boolean);
+
+      return (
+        <View key={i} style={styles.recipeCard}>
+          <Pressable
+            style={styles.recipeHeader}
+            onPress={() => setExpanded(isExpanded ? null : r.name)}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={styles.recipeName}>{r.name}</Text>
+              <Text style={styles.recipeCategory}>{r.category}</Text>
+            </View>
+            <View style={{ alignItems: "flex-end", gap: 4 }}>
+              <Text style={styles.recipeScore}>
+                {r.match_score.percentage}%
+              </Text>
+              <Text style={{ color: "#555", fontSize: 12 }}>
+                {isExpanded ? "▲ hide" : "▼ details"}
+              </Text>
+            </View>
+          </Pressable>
+
+          {isExpanded && (
+            <View style={styles.recipeDetails}>
+              <Text style={styles.recipeDetailLabel}>
+                🛒 Ingredients Needed
+              </Text>
+              {ingredientList.map((ing, j) => (
+                <Text key={j} style={styles.recipeDetailItem}>
+                  • {ing}
+                </Text>
+              ))}
+              <Text style={[styles.recipeDetailLabel, { marginTop: 12 }]}>
+                📋 Instructions
+              </Text>
+              <Text style={styles.recipeDetailText}>{r.instructions}</Text>
+
+              <Pressable
+                style={styles.useRecipeBtn}
+                onPress={() => {
+                  ingredientList.forEach((ing) => {
+                    pantryStore.addItem("recipe", ing);
+                  });
+                  pantryStore.saveRecipe(
+                    r.name,
+                    ingredientList,
+                    r.instructions,
+                  );
+                  alert(
+                    `✓ Added ${ingredientList.length} ingredients from "${r.name}" to your pantry!`,
+                  );
+                }}
+              >
+                <Text style={styles.useRecipeBtnText}>🛒 Use This Recipe</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
+      );
+    });
+  };
+
+  const renderTextMode = () => (
+    <KeyboardAvoidingView
+      style={styles.textModeContainer}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView contentContainerStyle={styles.textModeScroll}>
+        <Text style={styles.textModeTitle}>📝 Enter Ingredients</Text>
+        <Text style={styles.textModeSubtitle}>
+          Type or paste your ingredients, separated by commas
+        </Text>
+
+        <TextInput
+          style={styles.textInput}
+          placeholder="e.g. chicken, rice, garlic, onion..."
+          placeholderTextColor="#555"
+          multiline
+          value={ingredientText}
+          onChangeText={setIngredientText}
         />
 
-        {!analysisResult && (
-          <View style={{ width: "100%", marginTop: 20, paddingHorizontal: 20 }}>
+        {!textResult && (
+          <View style={styles.textButtons}>
             <Pressable
-              style={[styles.previewBtn, { marginBottom: 12 }]}
+              style={styles.previewBtn}
+              onPress={() => {
+                setTextMode(false);
+                setTextResult(null);
+                setIngredientText("");
+                setTextAddedIngredients(false);
+              }}
+            >
+              <Text style={styles.previewBtnText}>← Back to Camera</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.previewBtn,
+                styles.previewBtnAccent,
+                textAnalyzing && { opacity: 0.6 },
+              ]}
+              onPress={() => setShowBudgetModal(true)}
+              disabled={textAnalyzing}
+            >
+              <Text style={[styles.previewBtnText, { color: "#000" }]}>
+                {textAnalyzing ? "⏳ Matching..." : "🍽️ Find Recipes"}
+              </Text>
+            </Pressable>
+          </View>
+        )}
+
+        {textAnalyzing && (
+          <View style={{ alignItems: "center", gap: 8, marginTop: 16 }}>
+            <Text style={{ color: "#888", fontSize: 13 }}>
+              Finding recipes...
+            </Text>
+          </View>
+        )}
+
+        {textResult && (
+          <View style={styles.analysisCard}>
+            <Text style={styles.analysisTitle}>🥘 Ingredients</Text>
+            <Text style={styles.analysisIngredients}>
+              {textResult.ingredients.map((i) => i.name).join(", ")}
+            </Text>
+            {renderBudgetSummary(textResult)}
+            <Text style={styles.analysisTitle}>🍽️ Matched Recipes</Text>
+            {renderRecipeList(
+              textResult.matched_recipes,
+              textExpandedRecipe,
+              setTextExpandedRecipe,
+            )}
+            {textResult.generated_recipe ? (
+              <View style={{ marginTop: 12 }}>
+                <Text style={styles.analysisTitle}>🍳 Generated Recipe</Text>
+                <Text
+                  style={{
+                    color: "#ccc",
+                    fontSize: 13,
+                    lineHeight: 20,
+                    marginTop: 6,
+                  }}
+                >
+                  {sanitizeGeneratedRecipe(textResult.generated_recipe)}
+                </Text>
+              </View>
+            ) : null}
+            {hasSavableGeneratedRecipe(textResult) ? (
+              <View style={styles.resultButtons}>
+                <Pressable
+                  style={[
+                    styles.addButton,
+                    textAddedIngredients && styles.addButtonDone,
+                  ]}
+                  onPress={() =>
+                    saveGeneratedRecipe(
+                      textResult,
+                      setTextAddedIngredients,
+                      textAddedIngredients,
+                    )
+                  }
+                  disabled={textAddedIngredients}
+                >
+                  <Text style={styles.addButtonText}>
+                    {textAddedIngredients
+                      ? "✓ Generated Recipe Saved!"
+                      : "Save Generated Recipe"}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
+            <Pressable
+              style={[styles.previewBtn, { marginTop: 8 }]}
+              onPress={() => {
+                setTextResult(null);
+                setIngredientText("");
+                setTextAddedIngredients(false);
+                setTextExpandedRecipe(null);
+                setTextMode(false);
+              }}
+            >
+              <Text style={styles.previewBtnText}>← Back to Camera</Text>
+            </Pressable>
+          </View>
+        )}
+      </ScrollView>
+
+      <Modal
+        transparent
+        visible={showBudgetModal}
+        animationType="slide"
+        onRequestClose={() => setShowBudgetModal(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowBudgetModal(false)}
+        >
+          <View style={styles.budgetModal}>
+            <Text style={styles.budgetModalTitle}>💰 Select Budget Tier</Text>
+            <Text style={styles.budgetModalSubtitle}>
+              This helps match affordable recipes
+            </Text>
+            {Object.values(BUDGET_TIERS).map((tier) => (
+              <Pressable
+                key={tier.value}
+                style={[
+                  styles.budgetOption,
+                  budgetTier === tier.value && styles.budgetOptionSelected,
+                ]}
+                onPress={async () => {
+                  const t = tier.value as BudgetTier;
+                  setBudgetTier(t);
+                  await budgetStore.save(t);
+                  setShowBudgetModal(false);
+                  analyzeText();
+                }}
+              >
+                <Text style={styles.budgetOptionLabel}>{tier.label}</Text>
+                <Text style={styles.budgetOptionDesc}>{tier.description}</Text>
+                {budgetTier === tier.value && (
+                  <Text style={styles.budgetOptionCheck}>✓</Text>
+                )}
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
+    </KeyboardAvoidingView>
+  );
+
+  const renderPicture = (uri: string) => (
+    <View style={styles.previewContainer}>
+      {!analysisResult && (
+        <>
+          <Image
+            source={{ uri }}
+            contentFit="contain"
+            style={styles.previewImage}
+          />
+          <View style={styles.previewButtons}>
+            <Pressable
+              style={styles.previewBtn}
               onPress={() => {
                 setUri(null);
                 setAnalysisResult(null);
@@ -236,11 +612,12 @@ export default function Camera() {
               </Text>
             </Pressable>
           </View>
-        )}
+        </>
+      )}
 
       {analyzing && (
-        <View style={{ alignItems: "center", marginTop: 20 }}>
-          <Text style={{ color: "#888", fontSize: 13, marginBottom: 8 }}>
+        <View style={{ alignItems: "center", gap: 8 }}>
+          <Text style={{ color: "#888", fontSize: 13 }}>
             Analyzing Image...
           </Text>
           <Text style={{ color: "#555", fontSize: 12 }}>
@@ -250,282 +627,74 @@ export default function Camera() {
       )}
 
       {analysisResult && (
-        <View style={[styles.analysisCard, { marginTop: 20 }]}>
-          <ScrollView
-            style={styles.analysisScroll}
-            contentContainerStyle={styles.analysisScrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            <Text style={styles.analysisTitle}>🥘 Ingredients Found</Text>
-            <Text style={styles.analysisIngredients}>
-              {analysisResult.ingredients?.map((i) => i.name).join(", ") || "None"}
-            </Text>
-
-            {/* Show refusal information if applicable */}
-            {analysisResult.status === "refusal" ? (
-              <View>
-                <Text style={styles.analysisTitle}>⚠️ Issue</Text>
-                <Text style={{ fontSize: 13, color: "#d97706", marginBottom: 8 }}>
-                  {analysisResult.reason === "insufficient_ingredients" && "Not enough ingredients detected (need at least 3)"}
-                  {analysisResult.reason === "incompatible_ingredients" && "These ingredients don't combine well into a tasty recipe"}
-                  {analysisResult.reason === "no_matching_recipes" && "No recipes match these ingredients"}
-                  {analysisResult.reason === "low_quality_matches" && `Low match quality (${analysisResult.best_score}%)`}
-                </Text>
-                {analysisResult.suggestions && (
-                  <View style={{ marginTop: 4 }}>
-                    <Text style={{ fontSize: 12, fontWeight: "600", color: "#333", marginBottom: 4 }}>
-                      Suggestions:
-                    </Text>
-                    {analysisResult.suggestions.map((s, i) => (
-                      <Text key={i} style={{ fontSize: 12, color: "#555", marginBottom: 2 }}>
-                        • {s}
-                      </Text>
-                    ))}
-                  </View>
-                )}
-                {analysisResult.partial_matches && (
-                  <View style={{ marginTop: 8 }}>
-                    <Text style={{ fontSize: 12, fontWeight: "600", color: "#333", marginBottom: 4 }}>
-                      Partial Matches:
-                    </Text>
-                    {analysisResult.partial_matches.map((m, i) => (
-                      <Text key={i} style={{ fontSize: 12, color: "#555" }}>
-                        • {m.name} ({m.score}%)
-                      </Text>
-                    ))}
-                  </View>
-                )}
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.analysisTitle}>🍽️ Matched Recipe</Text>
-                {!analysisResult.matched_recipes || analysisResult.matched_recipes.length === 0 ? (
-                  <Text style={styles.analysisNone}>No recipes matched</Text>
-                ) : (
-                  analysisResult.matched_recipes.map((r, i) => (
-                    <View key={i} style={{ marginBottom: 12 }}>
-                      <View style={styles.recipeRow}>
-                        <Text style={styles.recipeName}>{r.name}</Text>
-                        <Text style={styles.recipeScore}>
-                          {r.match_score?.percentage || 0}%
-                        </Text>
-                      </View>
-                      {r.instructions && (
-                        <View style={{ marginTop: 8, paddingHorizontal: 8 }}>
-                          <Text style={{ fontSize: 12, fontWeight: "600", color: "#333", marginBottom: 4 }}>
-                            Instructions:
-                          </Text>
-                          {r.instructions.split('. ').filter(s => s.trim()).map((step, idx) => (
-                            <Text key={idx} style={{ fontSize: 12, color: "#555", lineHeight: 18, marginBottom: 4 }}>
-                              {idx + 1}. {step.trim()}{step.endsWith('.') ? '' : '.'}
-                            </Text>
-                          ))}
-                        </View>
-                      )}
-                    </View>
-                  ))
-                )}
-
-                {/* Show pricing information if available */}
-                {analysisResult.generated_recipe_pricing && (
-                  <View style={{ marginTop: 12 }}>
-                    <Text style={styles.analysisTitle}>💰 Estimated Cost</Text>
-                    <Text style={{ fontSize: 14, color: "#16a34a", fontWeight: "600" }}>
-                      ${analysisResult.generated_recipe_pricing.total_price?.toFixed(2) || "N/A"}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
-          </ScrollView>
-
-          <View style={styles.resultButtons}>
-            <Pressable
-              style={[
-                styles.addButton,
-                addedIngredients && styles.addButtonDone,
-              ]}
-              onPress={() => {
-                if (addedIngredients) return;
-                analysisResult.ingredients?.forEach((ing) => {
-                  pantryStore.addItem(ing.category, ing.name);
-                });
-                setAddedIngredients(true);
-              }}
-            >
-              <Text style={styles.addButtonText}>
-                {addedIngredients
-                  ? "✓ Added to Pantry!"
-                  : "Add Ingredients to Pantry"}
+        <ScrollView
+          style={{ width: "100%", flex: 1 }}
+          contentContainerStyle={styles.analysisCard}
+          nestedScrollEnabled
+        >
+          <Text style={styles.analysisTitle}>🥘 Ingredients Found</Text>
+          <Text style={styles.analysisIngredients}>
+            {analysisResult.ingredients.map((i) => i.name).join(", ")}
+          </Text>
+          <Text style={styles.analysisTitle}>🍽️ Matched Recipes</Text>
+          {renderRecipeList(
+            analysisResult.matched_recipes,
+            expandedRecipe,
+            setExpandedRecipe,
+          )}
+          {analysisResult.generated_recipe && (
+            <View style={{ marginTop: 12 }}>
+              <Text style={styles.analysisTitle}>🍳 Generated Recipe</Text>
+              <Text
+                style={{
+                  color: "#ccc",
+                  fontSize: 13,
+                  lineHeight: 20,
+                  marginTop: 6,
+                }}
+              >
+                {sanitizeGeneratedRecipe(analysisResult.generated_recipe)}
               </Text>
-            </Pressable>
-          </View>
+            </View>
+          )}
+          {hasSavableGeneratedRecipe(analysisResult) ? (
+            <View style={styles.resultButtons}>
+              <Pressable
+                style={[
+                  styles.addButton,
+                  addedIngredients && styles.addButtonDone,
+                ]}
+                onPress={() =>
+                  saveGeneratedRecipe(
+                    analysisResult,
+                    setAddedIngredients,
+                    addedIngredients,
+                  )
+                }
+                disabled={addedIngredients}
+              >
+                <Text style={styles.addButtonText}>
+                  {addedIngredients
+                    ? "✓ Generated Recipe Saved!"
+                    : "Save Generated Recipe"}
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
           <Pressable
-            style={[styles.previewBtn, { marginTop: 12, marginHorizontal: 0 }]}
+            style={[styles.previewBtn, { marginTop: 8 }]}
             onPress={() => {
               setUri(null);
               setAnalysisResult(null);
               setAddedIngredients(false);
+              setExpandedRecipe(null);
             }}
           >
             <Text style={styles.previewBtnText}>📷 Take Another</Text>
           </Pressable>
-        </View>
+        </ScrollView>
       )}
-    </ScrollView>
-    </View>
-  );
 
-  const renderCamera = () => {
-    const sweepTranslate = sweepAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [-120, 120],
-    });
-
-    return (
-      <View style={styles.cameraContainer}>
-        <CameraView
-          style={styles.camera}
-          ref={ref}
-          facing={facing}
-          responsiveOrientationWhenOrientationLocked
-          onBarcodeScanned={
-            scanMode && !scanned ? handleBarcodeScanned : undefined
-          }
-          barcodeScannerSettings={{
-            barcodeTypes: [
-              "qr",
-              "ean13",
-              "ean8",
-              "upc_a",
-              "upc_e",
-              "code39",
-              "code128",
-              "pdf417",
-              "aztec",
-              "datamatrix",
-            ],
-          }}
-        />
-
-        <Pressable style={styles.menuBtn} onPress={() => setMenuOpen(true)}>
-          <Text style={styles.menuBtnText}>•••</Text>
-        </Pressable>
-
-        {scanMode && (
-          <View style={styles.scanOverlay}>
-            <View style={styles.scanBox}>
-              <View style={[styles.corner, styles.topLeft]} />
-              <View style={[styles.corner, styles.topRight]} />
-              <View style={[styles.corner, styles.bottomLeft]} />
-              <View style={[styles.corner, styles.bottomRight]} />
-              {!scanned && (
-                <Animated.View
-                  style={[
-                    styles.sweepLine,
-                    { transform: [{ translateY: sweepTranslate }] },
-                  ]}
-                />
-              )}
-            </View>
-            <Text style={styles.scanText}>Align barcode within the box</Text>
-            <Pressable
-              style={styles.cancelScanBtn}
-              onPress={() => {
-                setScanMode(false);
-                setScanned(false);
-                setScanResult(null);
-              }}
-            >
-              <Text style={styles.cancelScanText}>✕ Cancel Scan</Text>
-            </Pressable>
-          </View>
-        )}
-
-        {!scanMode && (
-          <View style={styles.cameraButtons}>
-            <Pressable style={[styles.captureBtn, { marginRight: 12 }]} onPress={capturePhoto}>
-              <Text style={styles.captureBtnText}>📸 Capture</Text>
-            </Pressable>
-            <Pressable style={styles.uploadBtn} onPress={pickImage}>
-              <Text style={styles.uploadBtnText}>📁 Upload Image</Text>
-            </Pressable>
-          </View>
-        )}
-
-        {scanResult && (
-          <Animated.View
-            style={[
-              styles.resultCard,
-              { transform: [{ translateY: slideUp }] },
-            ]}
-          >
-            <View style={styles.resultHandle} />
-            <Text style={styles.resultTitle}>✅ Barcode Scanned!</Text>
-            <View style={styles.resultRow}>
-              <Text style={styles.resultLabel}>Type</Text>
-              <Text style={styles.resultValue}>{scanResult.type}</Text>
-            </View>
-            <View style={styles.resultRow}>
-              <Text style={styles.resultLabel}>Data</Text>
-              <Text style={styles.resultValue} numberOfLines={2}>
-                {scanResult.data}
-              </Text>
-            </View>
-            <View style={styles.resultButtons}>
-              <Pressable
-                style={[styles.addButton, added && styles.addButtonDone]}
-                onPress={handleAddToPantry}
-              >
-                <Text style={styles.addButtonText}>
-                  {added ? "✓ Added!" : "Add to Pantry"}
-                </Text>
-              </Pressable>
-              <Pressable
-                style={styles.scanAgainButton}
-                onPress={handleScanAgain}
-              >
-                <Text style={styles.scanAgainText}>Scan Again</Text>
-              </Pressable>
-            </View>
-          </Animated.View>
-        )}
-
-        <Modal
-          transparent
-          visible={menuOpen}
-          animationType="fade"
-          onRequestClose={() => setMenuOpen(false)}
-        >
-          <Pressable
-            style={styles.modalOverlay}
-            onPress={() => setMenuOpen(false)}
-          >
-            <View style={styles.menuDropdown}>
-              <Text style={styles.menuHeader}>Options</Text>
-              <Pressable
-                style={styles.menuItem}
-                onPress={() => {
-                  setMenuOpen(false);
-                  setScanMode(true);
-                  setScanned(false);
-                  setScanResult(null);
-                }}
-              >
-                <Text style={styles.menuItemIcon}>▦</Text>
-                <Text style={styles.menuItemText}>Scan Barcode</Text>
-              </Pressable>
-            </View>
-          </Pressable>
-        </Modal>
-      </View>
-    );
-  };
-
-  return (
-    <View style={styles.container}>
-      {uri ? renderPicture(uri) : renderCamera()}
-      
       <Modal
         transparent
         visible={showBudgetModal}
@@ -538,7 +707,7 @@ export default function Camera() {
         >
           <View style={styles.budgetModal}>
             <Text style={styles.budgetModalTitle}>💰 Select Budget Tier</Text>
-            <Text style={[styles.budgetModalSubtitle, { marginTop: 8, marginBottom: 12 }]}>
+            <Text style={styles.budgetModalSubtitle}>
               This helps the AI suggest affordable recipes
             </Text>
             {Object.values(BUDGET_TIERS).map((tier) => (
@@ -568,10 +737,42 @@ export default function Camera() {
       </Modal>
     </View>
   );
-}
 
-const CORNER_SIZE = 24;
-const CORNER_THICKNESS = 3;
+  const renderCamera = () => (
+    <View style={styles.cameraContainer}>
+      <CameraView
+        style={styles.camera}
+        ref={ref}
+        facing={facing}
+        responsiveOrientationWhenOrientationLocked
+      />
+      <Pressable style={styles.textModeBtn} onPress={() => setTextMode(true)}>
+        <Text style={styles.textModeBtnText}>📝 Type Ingredients</Text>
+      </Pressable>
+      <View style={styles.shutterContainer}>
+        <Pressable onPress={toggleFacing}>
+          <FontAwesome6 name="rotate-left" size={28} color="white" />
+        </Pressable>
+        <Pressable onPress={takePicture}>
+          {({ pressed }) => (
+            <View style={[styles.shutterBtn, { opacity: pressed ? 0.5 : 1 }]}>
+              <View style={styles.shutterBtnInner} />
+            </View>
+          )}
+        </Pressable>
+        <View style={{ width: 28 }} />
+      </View>
+    </View>
+  );
+
+  if (textMode) return renderTextMode();
+
+  return (
+    <View style={styles.container}>
+      {uri ? renderPicture(uri) : renderCamera()}
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -582,117 +783,18 @@ const styles = StyleSheet.create({
   },
   cameraContainer: StyleSheet.absoluteFillObject,
   camera: StyleSheet.absoluteFillObject,
-  menuBtn: {
+  textModeBtn: {
     position: "absolute",
     top: 52,
-    right: 20,
+    left: 16,
     backgroundColor: "rgba(0,0,0,0.5)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.15)",
   },
-  menuBtnText: { color: "#fff", fontSize: 16, letterSpacing: 2 },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)" },
-  menuDropdown: {
-    position: "absolute",
-    top: 90,
-    right: 16,
-    backgroundColor: "#1a1a2e",
-    borderRadius: 14,
-    padding: 8,
-    minWidth: 180,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-  },
-  menuHeader: {
-    color: "#555",
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    textTransform: "uppercase",
-  },
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 10,
-  },
-  menuItemIcon: { fontSize: 18, color: ACCENT, marginRight: 10 },
-  menuItemText: { color: "#fff", fontSize: 15, fontWeight: "500" },
-  scanOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  scanBox: {
-    width: 250,
-    height: 250,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  corner: {
-    position: "absolute",
-    width: CORNER_SIZE,
-    height: CORNER_SIZE,
-    borderColor: ACCENT,
-  },
-  topLeft: {
-    top: 0,
-    left: 0,
-    borderTopWidth: CORNER_THICKNESS,
-    borderLeftWidth: CORNER_THICKNESS,
-  },
-  topRight: {
-    top: 0,
-    right: 0,
-    borderTopWidth: CORNER_THICKNESS,
-    borderRightWidth: CORNER_THICKNESS,
-  },
-  bottomLeft: {
-    bottom: 0,
-    left: 0,
-    borderBottomWidth: CORNER_THICKNESS,
-    borderLeftWidth: CORNER_THICKNESS,
-  },
-  bottomRight: {
-    bottom: 0,
-    right: 0,
-    borderBottomWidth: CORNER_THICKNESS,
-    borderRightWidth: CORNER_THICKNESS,
-  },
-  sweepLine: {
-    position: "absolute",
-    width: "100%",
-    height: 2,
-    backgroundColor: ACCENT,
-    opacity: 0.8,
-  },
-  scanText: {
-    color: "white",
-    marginTop: 16,
-    fontSize: 13,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    overflow: "hidden",
-  },
-  cancelScanBtn: {
-    marginTop: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
-  cancelScanText: { color: "#fff", fontSize: 14 },
+  textModeBtnText: { color: "#fff", fontSize: 13, fontWeight: "600" },
   shutterContainer: {
     position: "absolute",
     bottom: 44,
@@ -722,106 +824,30 @@ const styles = StyleSheet.create({
   previewContainer: {
     flex: 1,
     backgroundColor: "#000",
-  },
-  previewImage: {
-    width: "100%",
-    height: 240,
-    flexShrink: 0,
-  },
-  previewBtn: {
-    width: "100%",
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 52,
+    gap: 20,
+  },
+  previewImage: { width: "100%", aspectRatio: 1 },
+  previewButtons: { flexDirection: "row", gap: 12, paddingHorizontal: 24 },
+  previewBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.08)",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.12)",
   },
   previewBtnAccent: { backgroundColor: ACCENT, borderColor: ACCENT },
-  previewBtnText: { color: "#fff", fontWeight: "600", fontSize: 16 },
-  resultCard: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#1a1a2e",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    paddingBottom: 40,
-  },
-  resultHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: "#444",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 16,
-  },
-  resultTitle: {
-    color: ACCENT,
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 16,
-  },
-  resultRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#2a2a3e",
-  },
-  resultLabel: { color: "#888", fontSize: 14 },
-  resultValue: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
-    maxWidth: "70%",
-    textAlign: "right",
-  },
-  resultButtons: { flexDirection: "row", marginTop: 20 },
-  addButton: {
-    flex: 1,
-    backgroundColor: ACCENT,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 52,
-  },
-  addButtonDone: {
-    backgroundColor: "#2a2a3e",
-    borderWidth: 1,
-    borderColor: ACCENT,
-  },
-  addButtonText: { color: "#000", fontWeight: "bold", fontSize: 16 },
-  scanAgainButton: {
-    flex: 1,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#333",
-  },
-  scanAgainText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
+  previewBtnText: { color: "#fff", fontWeight: "600", fontSize: 14 },
   analysisCard: {
     width: "100%",
     backgroundColor: "#1a1a2e",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
-    maxHeight: 520,
-    flexShrink: 1,
-  },
-  analysisScroll: {
-    flexGrow: 0,
-  },
-  analysisScrollContent: {
-    paddingBottom: 12,
+    gap: 8,
   },
   analysisTitle: {
     color: ACCENT,
@@ -831,49 +857,80 @@ const styles = StyleSheet.create({
   },
   analysisIngredients: { color: "#ccc", fontSize: 13, lineHeight: 20 },
   analysisNone: { color: "#555", fontSize: 13 },
-  recipeRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#2a2a3e",
-  },
-  recipeName: { color: "#fff", fontSize: 14, fontWeight: "500" },
-  recipeScore: { color: ACCENT, fontSize: 14, fontWeight: "bold" },
-  generatedRecipeBox: {
-    backgroundColor: "rgba(255,255,255,0.04)",
+  budgetSummaryCard: {
+    marginTop: 8,
+    padding: 14,
     borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.04)",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.08)",
-    padding: 14,
+    gap: 10,
   },
-  generatedRecipeText: {
-    color: "#eee",
-    fontSize: 13,
-    lineHeight: 20,
+  budgetSummaryTitle: {
+    color: ACCENT,
+    fontWeight: "700",
+    fontSize: 14,
   },
-  priceCard: {
-    backgroundColor: "rgba(74,222,128,0.08)",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "rgba(74,222,128,0.22)",
-    padding: 14,
-  },
-  priceValue: {
+  budgetSummaryStatus: {
     color: "#fff",
-    fontSize: 26,
-    fontWeight: "800",
+    fontSize: 13,
+    fontWeight: "600",
   },
-  priceMeta: {
-    color: "#9be7b5",
-    fontSize: 12,
+  budgetSummaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
   },
-  priceIngredients: {
-    color: "#cfeedd",
-    fontSize: 12,
-    lineHeight: 18,
+  budgetSummaryLabel: { color: "#888", fontSize: 13 },
+  budgetSummaryValue: { color: "#fff", fontSize: 13, fontWeight: "600" },
+  budgetSummaryPrompt: { color: "#ccc", fontSize: 12, lineHeight: 18 },
+  budgetSummaryHint: { color: ACCENT, fontSize: 12, lineHeight: 18 },
+  recipeCard: {
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    marginTop: 8,
+    overflow: "hidden",
   },
-
+  recipeHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 14,
+  },
+  recipeName: { color: "#fff", fontSize: 14, fontWeight: "600" },
+  recipeCategory: { color: "#555", fontSize: 12, marginTop: 2 },
+  recipeScore: { color: ACCENT, fontSize: 14, fontWeight: "bold" },
+  recipeDetails: {
+    padding: 14,
+    paddingTop: 0,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.06)",
+  },
+  recipeDetailLabel: {
+    color: ACCENT,
+    fontWeight: "600",
+    fontSize: 13,
+    marginBottom: 6,
+  },
+  recipeDetailItem: { color: "#ccc", fontSize: 13, lineHeight: 22 },
+  recipeDetailText: { color: "#ccc", fontSize: 13, lineHeight: 20 },
+  resultButtons: { flexDirection: "row", gap: 12, marginTop: 20 },
+  addButton: {
+    flex: 1,
+    backgroundColor: ACCENT,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  addButtonDone: {
+    backgroundColor: "#2a2a3e",
+    borderWidth: 1,
+    borderColor: ACCENT,
+  },
+  addButtonText: { color: "#000", fontWeight: "bold", fontSize: 15 },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)" },
   budgetModal: {
     position: "absolute",
     bottom: 0,
@@ -884,17 +941,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 24,
     paddingBottom: 40,
+    gap: 12,
   },
-  budgetModalTitle: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  budgetModalSubtitle: {
-    color: "#555",
-    fontSize: 13,
-    marginBottom: 8,
-  },
+  budgetModalTitle: { color: "#fff", fontSize: 20, fontWeight: "bold" },
+  budgetModalSubtitle: { color: "#555", fontSize: 13, marginBottom: 8 },
   budgetOption: {
     backgroundColor: "rgba(255,255,255,0.05)",
     borderRadius: 14,
@@ -904,63 +954,45 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
   },
   budgetOptionSelected: {
     borderColor: ACCENT,
     backgroundColor: "rgba(74,222,128,0.08)",
   },
-  budgetOptionLabel: {
+  budgetOptionLabel: { color: "#fff", fontWeight: "600", fontSize: 15 },
+  budgetOptionDesc: { color: "#888", fontSize: 13 },
+  budgetOptionCheck: { color: ACCENT, fontSize: 18, fontWeight: "bold" },
+  textModeContainer: { flex: 1, backgroundColor: "#0d0d1a" },
+  textModeScroll: { padding: 24, gap: 16, paddingBottom: 60 },
+  textModeTitle: {
     color: "#fff",
-    fontWeight: "600",
+    fontSize: 22,
+    fontWeight: "800",
+    marginTop: 20,
+  },
+  textModeSubtitle: { color: "#555", fontSize: 14, marginBottom: 8 },
+  textInput: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 14,
+    padding: 16,
+    color: "#fff",
     fontSize: 15,
+    minHeight: 120,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    textAlignVertical: "top",
   },
-  budgetOptionDesc: {
-    color: "#888",
-    fontSize: 13,
-  },
-  budgetOptionCheck: {
-    color: ACCENT,
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  cameraButtons: {
-    position: "absolute",
-    bottom: 40,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    paddingHorizontal: 24,
-  },
-  captureBtn: {
-    flex: 1,
+  textButtons: { flexDirection: "row", gap: 12 },
+  useRecipeBtn: {
+    marginTop: 16,
     backgroundColor: ACCENT,
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
   },
-  captureBtnText: {
+  useRecipeBtnText: {
     color: "#000",
     fontWeight: "bold",
-    fontSize: 16,
-  },
-  uploadBtn: {
-    flex: 1,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.3)",
-  },
-  uploadBtnText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
+    fontSize: 14,
   },
 });

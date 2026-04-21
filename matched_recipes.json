@@ -1,0 +1,170 @@
+[
+  {
+    "name": "tuna nicoise",
+    "category": "Seafood",
+    "ingredients": "450g Potatoes, 2 tblsp Olive Oil, 4 Eggs, 1 tbls Red Wine Vinegar, 2 tblsp Capers, 50g Sunflower Oil, 1/2 Red Onions, 100g Spinach, 400g Tuna",
+    "instructions": "Heat oven to 200C/fan 180C/gas 6. Toss the potatoes with 2 tsp oil and some seasoning. Tip onto a large baking tray, then roast for 20 mins, stirring halfway, until crisp, golden and cooked through. Meanwhile, put eggs in a small pan of water, bring to the boil, then simmer for 8-10 mins, depending on how you like them cooked. Plunge into a bowl of cold water to cool for a few mins. Peel away the shells, then cut into halves. In a large salad bowl, whisk together the remaining oil, red wine vinegar, capers and chopped tomatoes. Season, tip in the onion, spinach, tuna and potatoes, then gently toss together. Top with the eggs, then serve straight away.",
+    "match_score": {
+      "percentage": 33.3,
+      "matching": 3,
+      "total": 9,
+      "missing": 6
+    }
+  },
+  {
+    "name": "pancakes",
+    "category": "Dessert",
+    "ingredients": "100g Flour, 2 large Eggs, 300ml Milk, 1 tbls Sunflower Oil, to serve Sugar, to serve Raspberries, to serve Blueberries",
+    "instructions": "Put the flour, eggs, milk, 1 tbsp oil and a pinch of salt into a bowl or large jug, then whisk to a smooth batter. Set aside for 30 mins to rest if you have time, or start cooking straight away. Set a medium frying pan or crepe pan over a medium heat and carefully wipe it with some oiled kitchen paper. When hot, cook your pancakes for 1 min on each side until golden, keeping them warm in a low oven as you go. Serve with lemon wedges and sugar, or your favourite filling. Once cold, you can layer the pancakes between baking parchment, then wrap in cling film and freeze for up to 2 months.",
+    "match_score": {
+      "percentage": 28.6,
+      "matching": 2,
+      "total": 7,
+      "missing": 5
+    }
+  },
+  {
+    "name": "salmon avocado salad",
+    "category": "Seafood",
+    "ingredients": "400g Salmon, 3 Avocado, 1 Cucumber, 400g Spinach, 4 tbs Mint, zest and juice of 1 Lime, 2 tsp Honey, 3 tbs Olive Oil",
+    "instructions": "Season the salmon, then rub with oil. Mix the dressing ingredients together. Halve, stone, peel and slice the avocados. Halve and quarter the cucumber lengthways, then cut into slices. Divide salad, avocado and cucumber between four plates, then drizzle with half the dressing. Heat a non-stick pan. Add the salmon and fry for 3-4 mins on each side until crisp but still moist inside. Put a salmon fillet on top of each salad and drizzle over the remaining dressing. Serve warm.",
+    "match_score": {
+      "percentage": 25.0,
+      "matching": 2,
+      "total": 8,
+      "missing": 6
+    }
+  },
+  {
+    "name": "carrot cake",
+    "category": "Dessert",
+    "ingredients": "450ml Vegetable Oil, 400g Plain Flour, 2 tsp Bicarbonate Of Soda, 550ml Sugar, 5 Eggs, 1/2 tsp Salt, 2 tsp Cinnamon, 500g grated Carrots, 150g Walnuts, 200g Cream Cheese, 150g Caster Sugar, 100g Butter",
+    "instructions": "For the carrot cake, preheat the oven to 160C/325F/Gas 3. Grease and line a 26cm/10in springform cake tin. Mix all of the ingredients for the carrot cake, except the carrots and walnuts, together in a bowl until well combined. Stir in the carrots and walnuts. Spoon the mixture into the cake tin and bake for 1 hour 15 minutes, or until a skewer inserted into the middle comes out clean. Remove the cake from the oven and set aside to cool for 10 minutes, then carefully remove the cake from the tin and set aside to cool completely on a cooling rack. Meanwhile, for the icing, beat the cream cheese, caster sugar and butter together in a bowl until fluffy. Spread the icing over the top of the cake with a palette knife.",
+    "match_score": {
+      "percentage": 16.7,
+      "matching": 2,
+      "total": 12,
+      "missing": 10
+    }
+  },
+  {
+    "name": "chocolate gateau",
+    "category": "Dessert",
+    "ingredients": "250g Plain chocolate, 175g Butter, 2 tablespoons Milk, 5 Eggs, 175g Granulated Sugar, 125g Flour",
+    "instructions": "Preheat the oven to 180\u00b0C/350\u00b0F/Gas Mark 4. Grease and line the base of an 8 in round spring form cake tin with baking parchment. Break the chocolate into a heatproof bowl and place over a saucepan of gently simmering water and stir until it melts. Place the butter and sugar in a mixing bowl and cream together with a wooden spoon until light and fluffy. Gradually beat in the eggs, adding a little flour if the mixture begins to curdle. Fold in the remaining flour with the cooled, melted chocolate and milk. Mix until smooth. Spread the mixture into the cake tin and bake for 50-55 mins or until firm in the centre and a skewer comes out cleanly. Cool for 10 minutes, then turn out and cool completely.",
+    "match_score": {
+      "percentage": 16.7,
+      "matching": 1,
+      "total": 6,
+      "missing": 5
+    }
+  },
+  {
+    "name": "breakfast potatoes",
+    "category": "Breakfast",
+    "ingredients": "4 medium potatoes, 1 red bell pepper, 1 onion, 3 cloves garlic, 2 tbsp olive oil, Salt and pepper to taste, 1 tsp paprika, Fresh herbs",
+    "instructions": "1. Dice potatoes into small cubes. 2. Heat olive oil in a large skillet over medium-high heat. 3. Add diced onions and bell peppers, saut\u00e9 for 3-4 minutes. 4. Add potato cubes and cook for 10-12 minutes, stirring occasionally, until potatoes are golden and crispy. 5. Season with salt, pepper, and paprika. 6. Add garlic and cook for 1 minute more. 7. Serve hot, optionally topped with fried eggs and fresh herbs.",
+    "match_score": {
+      "percentage": 12.5,
+      "matching": 1,
+      "total": 8,
+      "missing": 7
+    }
+  },
+  {
+    "name": "apple cake",
+    "category": "Dessert",
+    "ingredients": "4 Eggs, 200g Sugar, 200g Self-raising Flour, 200g Melted Butter, 1 tsp Vanilla Extract, 1 tsp Ground Cinnamon, 3 Apples, Pinch Salt, Sprinkling Ground Sugar",
+    "instructions": "Preheat the oven to 180\u00b0C. (350\u02daF) Grease a cake pan and line it with baking paper. In a large bowl, break the four eggs with the sugar and beat until they have tripled in volume and become fluffy. Sift the self-rising baking flour and add it to your egg mixture. Fold this over, preserving as much air as possible. Add the melted (and slightly cooled) butter and mix until combined. Add cinnamon, pinch of salt and vanilla extract. Add the diced apple to the batter and gently fold them into the batter so that the apple pieces are evenly distributed. You can roll the apple pieces through some more cinnamon. Pour the batter into the prepared cake pan and smooth the top with a spatula. Place the apple slices on top of the batter and press lightly. Sprinkle optionally with some almond shavings. Bake the apple cake in the preheated oven for about 45-50 minutes, or until a wooden skewer comes out clean when inserted into the center of the cake. Remove the cake from the oven and let it cool in the mold for a few minutes. Then carefully remove the cake from the mold and let cool completely on a wire rack. Sprinkle the cooled apple cake with powdered sugar",
+    "match_score": {
+      "percentage": 11.1,
+      "matching": 1,
+      "total": 9,
+      "missing": 8
+    }
+  },
+  {
+    "name": "chocolate chip cookies",
+    "category": "Dessert",
+    "ingredients": "225g butter, 200g brown sugar, 100g white sugar, 2 eggs, 2 tsp vanilla extract, 280g flour, 1 tsp baking soda, 1 tsp salt, 340g chocolate chips",
+    "instructions": "1. Preheat oven to 375\u00b0F (190\u00b0C). 2. In a large bowl, cream together butter and sugars until light and fluffy. 3. Beat in eggs one at a time, then add vanilla. 4. In another bowl, combine flour, baking soda, and salt. 5. Gradually blend the dry ingredients into the butter mixture. 6. Stir in chocolate chips. 7. Drop rounded tablespoons of dough onto cookie sheets. 8. Bake for 9-11 minutes or until golden brown. 9. Cool on baking sheet for 2 minutes before removing to a wire rack.",
+    "match_score": {
+      "percentage": 11.1,
+      "matching": 1,
+      "total": 9,
+      "missing": 8
+    }
+  },
+  {
+    "name": "kofta burgers",
+    "category": "Lamb",
+    "ingredients": "1kg Lamb, 2 Onion, 1 Garlic Bulb, 6 tablespoons Garam Masala, Bunch Coriander, 1 tablespoon Chilli Sauce, 8 Pita Bread, 4 sliced Tomato, 1/2 Red Cabbage, 1 sliced Red Onions, Small pack Yogurt",
+    "instructions": "Tip the mince into a large bowl with all the other burger ingredients and a good pinch of salt. Roll up your sleeves, get your hands into the mix and squelch everything together through your fingers until completely mixed. Pat the mix into 16 small burgers. These may now be frozen for up to 1 month or chilled up to a day ahead. To cook, heat grill to its highest setting and lay the burgers in a single layer on a baking tray. Grill on the highest shelf for 5-6 mins on each side until browned and cooked through. Pile burgers onto a platter and serve with all the accompaniments, so everyone can construct their own sandwich.",
+    "match_score": {
+      "percentage": 9.1,
+      "matching": 1,
+      "total": 11,
+      "missing": 10
+    }
+  },
+  {
+    "name": "pouding chomeur",
+    "category": "Dessert",
+    "ingredients": "1/2 cup Butter, 1 cup Sugar, 2 Eggs, 1 tsp Vanilla Extract, 2 cups Flour, 1 tsp Baking Powder, 1 1/4 cup Milk, 1 1/2 cup Maple Syrup, 1 1/2 cup Brown Sugar, 1 1/2 cup Single Cream, 1/3 cup Butter",
+    "instructions": "In a large bowl, with an electric mixer, mix the butter and sugar till the mix is light. Add eggs and vanilla and mix. In another bowl, mix flour and baking powder. Alternate flour mix and milk to the butter mix. Pour into a 13 inch by 9 inch greased pan. For the maple sauce, in a large casserole, bring to boil the syrup, brown sugar, cream and butter and constantly stir. Reduce heat and gently cook 2 minutes or till sauce has reduced a little bit. Pour sauce gently over cake. Bake at 325\u00b0F (160\u00b0C) about 35 minutes or till cake is light brown and when toothpick inserted comes out clean.",
+    "match_score": {
+      "percentage": 9.1,
+      "matching": 1,
+      "total": 11,
+      "missing": 10
+    }
+  },
+  {
+    "name": "baklava with spiced nuts, ricotta & chocolate",
+    "category": "Dessert",
+    "ingredients": "500g Sugar, To taste Lemon Juice, 300g Walnuts, 200g Pecan Nuts, 100g Almonds, 2 tablespoons Ground Cinnamon, 1 tablespoon Ground Cardomom, 500g Ricotta, Zest of 1 Lemon, Zest of 1 Orange, 1 tablespoon Vanilla Bean Paste, 250g Unsalted Butter, 500g Filo Pastry, 100g Ground Pistachios",
+    "instructions": "First, make the syrup. Tip the sugar into a large saucepan with 650ml water. Stir over a low heat until the sugar has dissolved, then turn up the heat and bring to the boil. Reduce the heat to a simmer and cook for 15 mins, then squeeze in a few drops of lemon juice and simmer for a further 5 mins. Remove from the heat and leave to cool. Meanwhile, for assembling the baklava later, melt the butter in a small pan over a low heat for 5 mins, skimming and discarding any froth that rises to the surface. For the filling, crush all of the nuts in a pestle and mortar, or blitz in a food processor. Tip into a bowl, stir through the spices and set aside. In a separate bowl, mix the ricotta with the lemon and orange zests and vanilla. Heat the oven to 180C/160C fan/gas 4. Brush the bottom of a large baking tray with some of the melted butter. Working with one sheet of filo at a time, lay the sheet out on a board, sprinkle nut mixture, spoon ricotta mixture, fold and roll around a skewer to create a long roll. Scrunch the filo roll like an accordion and push onto the tray. Repeat. Cut each roll into four to make 48 large baklava, or eight to make 96 mini. Brush with remaining melted butter. Bake for 20-25 mins until evenly golden. While still hot, immediately pour over 5-6 ladlefuls of syrup. Set aside to cool and absorb. Melt the dark chocolate and drizzle over the cooled baklava and sprinkle with the ground pistachios.",
+    "match_score": {
+      "percentage": 7.1,
+      "matching": 1,
+      "total": 14,
+      "missing": 13
+    }
+  },
+  {
+    "name": "big mac",
+    "category": "Beef",
+    "ingredients": "400g Minced Beef, 2 tbs Olive Oil, 2 Sesame Seed Burger Buns, Chopped Onion, 1/4 Iceberg Lettuce, 2 sliced Cheese, 2 large Dill Pickles, 1 cup Mayonnaise, 2 tsp White Wine Vinegar, Pinch Pepper, 2 tsp Mustard, 1 1/2 tsp Onion Salt, 1 1/2 tsp Garlic Powder, 1/2 tsp Paprika",
+    "instructions": "For the Big Mac sauce, combine all the ingredients in a bowl, season with salt and chill until ready to use. To make the patties, season the mince with salt and pepper and form into 4 balls using about 1/3 cup mince each. Place each onto a square of baking paper and flatten to form into four x 15cm circles. Heat oil in a large frypan over high heat. In 2 batches, cook beef patties for 1-2 minutes each side until lightly charred and cooked through. Remove from heat and keep warm. Repeat with remaining two patties. Carefully slice each burger bun into three acrossways, then lightly toast. To assemble the burgers, spread a little Big Mac sauce over the bottom base. Top with some chopped onion, shredded lettuce, slice of cheese, beef patty and some pickle slices. Top with the middle bun layer, and spread with more Big Mac sauce, onion, lettuce, pickles, beef patty and then finish with more sauce. Top with burger lid to serve.",
+    "match_score": {
+      "percentage": 7.1,
+      "matching": 1,
+      "total": 14,
+      "missing": 13
+    }
+  },
+  {
+    "name": "fish pie",
+    "category": "Seafood",
+    "ingredients": "900g Floury Potatoes, 2 tbsp Olive Oil, 600ml Semi-skimmed Milk, 800g White Fish Fillets, 1 tbsp Plain flour, Grating Nutmeg, 3 tbsp Double Cream, 200g Jerusalem Artichokes, 1 finely sliced Leek, 200g peeled raw Prawns, Large handful Parsley, Handful Dill, Grated zest of 1 Lemon, 25g grated Gruyere, Juice of 1 Lemon",
+    "instructions": "Put the potatoes in a large pan of cold salted water and bring to the boil. Lower the heat, cover, then simmer gently for 15 minutes until tender. Drain, then return to the pan over a low heat for 30 seconds to drive off any excess water. Mash with 1 tbsp olive oil, then season. Meanwhile put the milk in a large saut\u00e9 pan, add the fish and bring to the boil. Remove from the heat, cover and stand for 3 minutes. Remove the fish and pat dry, then gently flake into an ovenproof dish, discarding the skin and any bones. Heat the remaining oil in a pan, stir in the flour and cook for 30 seconds. Gradually stir in 200-250ml of the reserved milk. Grate in nutmeg, season, then bubble until thick. Stir in the cream. Preheat the oven to 190\u00b0C. Grate the artichokes and add to the dish with the leek, prawns and herbs. Stir the lemon zest and juice into the sauce, then pour over. Mix gently. Spoon the mash onto the fish mixture, then use a fork to make peaks. Sprinkle over the cheese, then bake for 35-40 minutes until golden and bubbling. Serve with wilted greens.",
+    "match_score": {
+      "percentage": 6.7,
+      "matching": 1,
+      "total": 15,
+      "missing": 14
+    }
+  },
+  {
+    "name": "lamb tagine",
+    "category": "Lamb",
+    "ingredients": "2 tblsp Olive Oil, 1 finely sliced Onion, 2 chopped Carrots, 500g Lamb Leg, 2 cloves minced Garlic, 1/2 tsp Cumin, 1/2 tsp Ginger, 1/4 tsp Saffron, 1 tsp Cinnamon, 1 tblsp Honey, 100g Apricot, 1 Vegetable Stock Cube, 1 medium chopped Butternut Squash, Steamed Couscous, Chopped Parsley",
+    "instructions": "Heat the olive oil in a heavy-based pan and add the onion and carrot. Cook for 3-4 mins until softened. Add the diced lamb and brown all over. Stir in the garlic and all the spices and cook for a few mins more or until the aromas are released. Add the honey and apricots, crumble in the stock cube and pour over roughly 500ml boiling water or enough to cover the meat. Give it a good stir and bring to the boil. Turn down to a simmer, put the lid on and cook for 1 hour. Remove the lid and cook for a further 30 mins, then stir in the squash. Cook for 20-30 mins more until the squash is soft and the lamb is tender. Serve alongside rice or couscous and sprinkle with parsley and pine nuts, if using.",
+    "match_score": {
+      "percentage": 6.7,
+      "matching": 1,
+      "total": 15,
+      "missing": 14
+    }
+  }
+]
