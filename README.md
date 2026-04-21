@@ -293,14 +293,39 @@ cat generated_recipe.txt
 
 ```bash
 # Get all meals
-curl http://localhost:5000/api/meals
+curl http://localhost:5001/api/meals
 
 # Search for specific ingredient
-curl "http://localhost:5000/api/meals/search?name=chicken"
+curl "http://localhost:5001/api/meals/search?name=chicken"
 
 # Get specific recipe
-curl http://localhost:5000/api/meals/spaghetti
+curl http://localhost:5001/api/meals/spaghetti
 ```
+
+## 📝 Text Input Mode
+
+In addition to analyzing fridge images, BudgetBite supports direct ingredient input via text. This allows users to manually enter ingredients they have on hand for recipe recommendations and budget analysis.
+
+### Using the Text Input API
+
+**Endpoint:** `POST /api/analyze-text`
+
+**Request:**
+```json
+{
+  "ingredients": ["chicken breast", "rice", "garlic", "onion"]
+}
+```
+
+**Response:**
+The API returns validated recipes, budget tier, and regeneration results following the same pipeline as the image analysis path (validation → pricing → budget classification → regeneration if needed).
+
+### Text Input vs. Image Analysis
+
+- **Image Analysis:** Extracts ingredients from photos, useful for showing what's in your fridge
+- **Text Input:** Manual ingredient entry, useful for planning meals with specific items
+
+Both paths flow through the same validation, pricing, and budget regeneration logic to ensure consistency.
 
 ### Demo Architecture
 
