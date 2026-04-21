@@ -58,6 +58,145 @@ def _is_recipe_below_budget_floor(estimated_total, budget_tier):
         return estimated_total < 25.0
     return False
 
+
+def _build_top_matches(ingredients):
+    meals = get_all_meals()
+    matches = match_ingredients_to_meals(ingredients, meals)
+
+    top_matches = []
+    for match in matches[:5]:
+        meal = match['meal']
+        top_matches.append({
+            "name": meal['name'],
+            "category": meal.get('category', 'unknown'),
+            "ingredients": meal.get('ingredients', ''),
+            "instructions": meal.get('instructions', ''),
+            "match_score": {
+                "percentage": round(match['match_percentage'], 1),
+                "matching": match['matching_count'],
+                "total": match['total_ingredients'],
+                "missing": match['missing_count']
+            }
+        })
+
+    return top_matches
+
+
+def _analyze_ingredients_pipeline(
+    ingredients,
+    budget_tier,
+    zip_code,
+    requested_strategy,
+    regenerate_recipe=False,
+    max_regeneration_attempts=3,
+    non_food_items_detected=False,
+):
+    top_matches = _build_top_matches(ingredients)
+
+    extracted_ingredient_names = [
+        ing["name"].strip().lower()
+        for ing in ingredients
+        if isinstance(ing.get("name"), str) and ing["name"].strip()
+    ]
+
+    generated_recipe = None
+    recipe_generation_error = None
+    generated_recipe_pricing = None
+    generated_recipe_pricing_error = None
+    generated_recipe_pricing_ingredients = []
+    recipe_over_budget = False
+    recipe_under_budget = False
+    regeneration_prompt = None
+    generation_attempts = 0
+    budget_limit = BUDGET_TIER_LIMITS.get(budget_tier)
+
+    generation_attempt_limit = max_regeneration_attempts if regenerate_recipe else 1
+
+    if top_matches and extracted_ingredient_names:
+        while generation_attempts < generation_attempt_limit:
+            generation_attempts += 1
+            recipe_over_budget = False
+            recipe_under_budget = False
+            generated_recipe_pricing = None
+            generated_recipe_pricing_error = None
+            generated_recipe_pricing_ingredients = []
+
+            try:
+                generated_recipe = generate_recipe(top_matches, extracted_ingredient_names)
+            except Exception as recipe_error:
+                recipe_generation_error = str(recipe_error)
+                break
+
+            try:
+                parsed_recipe_ingredients = extract_ingredients_from_recipe_text(generated_recipe)
+                generated_recipe_pricing_ingredients = filter_pricing_ingredients(parsed_recipe_ingredients)
+
+                if generated_recipe_pricing_ingredients:
+                    generated_recipe_pricing = kroger_pricing.estimate_ingredient_total(
+                        generated_recipe_pricing_ingredients,
+                        zip_code,
+                        price_strategy=requested_strategy,
+                    )
+            except Exception as pricing_error:
+                generated_recipe_pricing_error = str(pricing_error)
+                break
+
+            estimated_total = _extract_estimated_total(generated_recipe_pricing)
+            recipe_over_budget = _is_recipe_over_budget(estimated_total, budget_tier)
+            recipe_under_budget = _is_recipe_below_budget_floor(estimated_total, budget_tier)
+            recipe_outside_budget_range = recipe_over_budget or recipe_under_budget
+
+            if not recipe_outside_budget_range:
+                break
+
+            if not regenerate_recipe:
+                if recipe_under_budget and estimated_total is not None:
+                    regeneration_prompt = (
+                        f"This recipe is estimated at ${estimated_total:.2f}, which is below your "
+                        "tier2 target range ($25.00-$50.00). Regenerate recipe?"
+                    )
+                elif budget_limit is not None and estimated_total is not None:
+                    regeneration_prompt = (
+                        f"This recipe is estimated at ${estimated_total:.2f}, which exceeds your "
+                        f"{budget_tier} limit (${budget_limit:.2f}). Regenerate recipe?"
+                    )
+                elif budget_limit is not None:
+                    regeneration_prompt = (
+                        f"This recipe may exceed your {budget_tier} limit (${budget_limit:.2f}). "
+                        "Regenerate recipe?"
+                    )
+                break
+
+        if regenerate_recipe and (recipe_over_budget or recipe_under_budget):
+            if recipe_under_budget:
+                regeneration_prompt = (
+                    f"Tried {generation_attempts} generation attempt(s), but the latest recipe is still "
+                    "below the tier2 target range ($25.00-$50.00)."
+                )
+            elif budget_limit is not None:
+                regeneration_prompt = (
+                    f"Tried {generation_attempts} generation attempt(s), but the latest recipe still "
+                    f"exceeds your {budget_tier} limit (${budget_limit:.2f})."
+                )
+
+    return {
+        "ingredients": ingredients,
+        "non_food_items_detected": non_food_items_detected,
+        "matched_recipes": top_matches,
+        "generated_recipe": generated_recipe,
+        "recipe_generation_error": recipe_generation_error,
+        "generated_recipe_pricing_ingredients": generated_recipe_pricing_ingredients,
+        "generated_recipe_pricing": generated_recipe_pricing,
+        "generated_recipe_pricing_error": generated_recipe_pricing_error,
+        "recipe_over_budget": recipe_over_budget,
+        "recipe_under_budget": recipe_under_budget,
+        "budget_limit": budget_limit,
+        "generation_attempts": generation_attempts,
+        "regeneration_requested": regenerate_recipe,
+        "regeneration_prompt": regeneration_prompt,
+        "can_regenerate": recipe_over_budget or recipe_under_budget,
+    }
+
 # Enable CORS for frontned access
 CORS(app)
 # Maintainer note:
@@ -92,6 +231,7 @@ def home():
         }
     })
 
+# Image input route
 @app.route('/api/analyze', methods=['POST'])
 def analyze_image():
     try:
@@ -137,136 +277,63 @@ def analyze_image():
             for ing in result.ingredients
         ]
 
-        # Step 2: Match to recipes in DB
-        meals = get_all_meals()
-        matches = match_ingredients_to_meals(ingredients, meals)
-
-        # Return top 5 matches
-        top_matches = []
-        for match in matches[:5]:
-            meal = match['meal']
-            top_matches.append({
-                "name": meal['name'],
-                "category": meal.get('category', 'unknown'),
-                "ingredients": meal.get('ingredients', ''),
-                "instructions": meal.get('instructions', ''),
-                "match_score": {
-                    "percentage": round(match['match_percentage'], 1),
-                    "matching": match['matching_count'],
-                    "total": match['total_ingredients'],
-                    "missing": match['missing_count']
-                }
-            })
-
-        # Step 3: Generate a new recipe using extracted ingredients + matched recipes.
-        extracted_ingredient_names = [
-            ing["name"].strip().lower()
-            for ing in ingredients
-            if isinstance(ing.get("name"), str) and ing["name"].strip()
-        ]
-
-        generated_recipe = None
-        recipe_generation_error = None
-        generated_recipe_pricing = None
-        generated_recipe_pricing_error = None
-        generated_recipe_pricing_ingredients = []
-        recipe_over_budget = False
-        recipe_under_budget = False
-        regeneration_prompt = None
-        generation_attempts = 0
-        budget_limit = BUDGET_TIER_LIMITS.get(budget_tier)
-
-        generation_attempt_limit = max_regeneration_attempts if regenerate_recipe else 1
-
-        if top_matches and extracted_ingredient_names:
-            while generation_attempts < generation_attempt_limit:
-                generation_attempts += 1
-                recipe_over_budget = False
-                recipe_under_budget = False
-                generated_recipe_pricing = None
-                generated_recipe_pricing_error = None
-                generated_recipe_pricing_ingredients = []
-
-                try:
-                    generated_recipe = generate_recipe(top_matches, extracted_ingredient_names)
-                except Exception as recipe_error:
-                    recipe_generation_error = str(recipe_error)
-                    break
-
-                # Step 4: Parse generated recipe ingredients and estimate pricing.
-                try:
-                    parsed_recipe_ingredients = extract_ingredients_from_recipe_text(generated_recipe)
-                    generated_recipe_pricing_ingredients = filter_pricing_ingredients(parsed_recipe_ingredients)
-
-                    if generated_recipe_pricing_ingredients:
-                        generated_recipe_pricing = kroger_pricing.estimate_ingredient_total(
-                            generated_recipe_pricing_ingredients,
-                            zip_code,
-                            price_strategy=requested_strategy,
-                        )
-                except Exception as pricing_error:
-                    generated_recipe_pricing_error = str(pricing_error)
-                    break
-
-                estimated_total = _extract_estimated_total(generated_recipe_pricing)
-                recipe_over_budget = _is_recipe_over_budget(estimated_total, budget_tier)
-                recipe_under_budget = _is_recipe_below_budget_floor(estimated_total, budget_tier)
-                recipe_outside_budget_range = recipe_over_budget or recipe_under_budget
-
-                if not recipe_outside_budget_range:
-                    break
-
-                if not regenerate_recipe:
-                    if recipe_under_budget and estimated_total is not None:
-                        regeneration_prompt = (
-                            f"This recipe is estimated at ${estimated_total:.2f}, which is below your "
-                            "tier2 target range ($25.00-$50.00). Regenerate recipe?"
-                        )
-                    elif budget_limit is not None and estimated_total is not None:
-                        regeneration_prompt = (
-                            f"This recipe is estimated at ${estimated_total:.2f}, which exceeds your "
-                            f"{budget_tier} limit (${budget_limit:.2f}). Regenerate recipe?"
-                        )
-                    elif budget_limit is not None:
-                        regeneration_prompt = (
-                            f"This recipe may exceed your {budget_tier} limit (${budget_limit:.2f}). "
-                            "Regenerate recipe?"
-                        )
-                    break
-
-            if regenerate_recipe and (recipe_over_budget or recipe_under_budget):
-                if recipe_under_budget:
-                    regeneration_prompt = (
-                        f"Tried {generation_attempts} generation attempt(s), but the latest recipe is still "
-                        "below the tier2 target range ($25.00-$50.00)."
-                    )
-                elif budget_limit is not None:
-                    regeneration_prompt = (
-                        f"Tried {generation_attempts} generation attempt(s), but the latest recipe still "
-                        f"exceeds your {budget_tier} limit (${budget_limit:.2f})."
-                    )
-
-        return jsonify({
-            "ingredients": ingredients,
-            "non_food_items_detected": result.non_food_items_detected,
-            "matched_recipes": top_matches,
-            "generated_recipe": generated_recipe,
-            "recipe_generation_error": recipe_generation_error,
-            "generated_recipe_pricing_ingredients": generated_recipe_pricing_ingredients,
-            "generated_recipe_pricing": generated_recipe_pricing,
-            "generated_recipe_pricing_error": generated_recipe_pricing_error,
-            "recipe_over_budget": recipe_over_budget,
-            "recipe_under_budget": recipe_under_budget,
-            "budget_limit": budget_limit,
-            "generation_attempts": generation_attempts,
-            "regeneration_requested": regenerate_recipe,
-            "regeneration_prompt": regeneration_prompt,
-            "can_regenerate": recipe_over_budget or recipe_under_budget,
-        })
+        return jsonify(
+            _analyze_ingredients_pipeline(
+                ingredients=ingredients,
+                budget_tier=budget_tier,
+                zip_code=zip_code,
+                requested_strategy=requested_strategy,
+                regenerate_recipe=regenerate_recipe,
+                max_regeneration_attempts=max_regeneration_attempts,
+                non_food_items_detected=result.non_food_items_detected,
+            )
+        )
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+
+# Text input route
+@app.route('/api/analyze-text', methods=['POST'])
+def analyze_text():
+    try:
+        data = request.get_json()
+        if not data or 'ingredients' not in data:
+            return jsonify({"error": "No ingredients provided"}), 400
+
+        budget_tier = data.get('budget_tier', 'tier1')
+        regenerate_recipe = bool(data.get('regenerate_recipe', False))
+        max_regeneration_attempts = data.get('max_regeneration_attempts', 3)
+        try:
+            max_regeneration_attempts = int(max_regeneration_attempts)
+        except (TypeError, ValueError):
+            max_regeneration_attempts = 3
+        max_regeneration_attempts = max(1, min(max_regeneration_attempts, 5))
+
+        zip_code = (data.get('zipCode') or os.getenv("KROGER_ZIP_CODE", "78201")).strip()
+        requested_strategy = (data.get('priceStrategy') or kroger_pricing.DEFAULT_PRICE_STRATEGY).strip()
+
+        # Parse comma text input
+        raw = data['ingredients']
+        ingredients = [
+            {"name": i.strip(), "quantity": None, "unit": None, "category": "unknown"}
+            for i in raw.split(',') if i.strip()
+        ]
+
+        return jsonify(
+            _analyze_ingredients_pipeline(
+                ingredients=ingredients,
+                budget_tier=budget_tier,
+                zip_code=zip_code,
+                requested_strategy=requested_strategy,
+                regenerate_recipe=regenerate_recipe,
+                max_regeneration_attempts=max_regeneration_attempts,
+                non_food_items_detected=False,
+            )
+        )
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/kroger/pricing/strategies', methods=['GET'])
 def kroger_pricing_strategies():
@@ -315,49 +382,7 @@ def kroger_price_ingredients():
     except Exception as e:
         return jsonify({"error": f"Failed to estimate ingredient pricing: {str(e)}"}), 502
 
-@app.route('/api/analyze-text', methods=['POST'])
-def analyze_text():
-    try:
-        data = request.get_json()
-        if not data or 'ingredients' not in data:
-            return jsonify({"error": "No ingredients provided"}), 400
 
-        budget_tier = data.get('budget_tier', 'tier1')
-
-        # Parse comma text input
-        raw = data['ingredients']
-        ingredients = [
-            {"name": i.strip(), "quantity": None, "unit": None, "category": "unknown"}
-            for i in raw.split(',') if i.strip()
-        ]
-
-        # Match recipes in the database
-        meals = get_all_meals()
-        matches = match_ingredients_to_meals(ingredients, meals)
-
-        top_matches = []
-        for match in matches[:5]:
-            meal = match['meal']
-            top_matches.append({
-                "name": meal['name'],
-                "category": meal.get('category', 'unknown'),
-                "ingredients": meal.get('ingredients', ''),
-                "instructions": meal.get('instructions', ''),
-                "match_score": {
-                    "percentage": round(match['match_percentage'], 1),
-                    "matching": match['matching_count'],
-                    "total": match['total_ingredients'],
-                    "missing": match['missing_count']
-                }
-            })
-
-        return jsonify({
-            "ingredients": ingredients,
-            "matched_recipes": top_matches
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001, host='0.0.0.0')

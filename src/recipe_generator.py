@@ -5,7 +5,6 @@ Takes matched_recipes.json as input and generates creative recipes using Gemini 
 import argparse
 import json
 import os
-import re
 import sys
 from pathlib import Path
 from typing import List, Dict
@@ -83,8 +82,7 @@ def generate_recipe(matched_recipes: List[Dict], extracted_ingredients: List[str
     if not extracted_ingredients:
         raise ValueError("No extracted image ingredients provided")
 
-    budget_limit = 15.00
-    print(f"🤖 Generating creative recipe (Budget Limit: ${budget_limit:.2f})...\n")
+    print("🤖 Generating creative recipe...\n")
 
     # Get top recipes and allowed ingredients from image extraction only.
     top_recipes = matched_recipes[:3]
@@ -99,13 +97,11 @@ TASK: Create ONE delicious, practical recipe based on available ingredients.
 
 RULES:
 1. Use ONLY ingredients from the "Available Ingredients" list.
-2. Estimate the "Total Estimated Cost" in USD for the whole meal.
-3. You may assume salt, pepper, and basic cooking oil are available ($0.00 cost).
-4. Do NOT add ingredients not in the list.
+2. You may assume salt, pepper, and basic cooking oil are available ($0.00 cost).
+3. Do NOT add ingredients not in the list.
 
 OUTPUT FORMAT:
 Recipe Name: [Name]
-Total Estimated Cost: $[Amount]
 Category: [Category]
 Prep Time: [Time]
 Servings: [Number]
@@ -127,7 +123,7 @@ Here are the top matching recipes:
 Available Ingredients:
 {ingredients_list}
 
-Please create a new recipe and estimate the cost.
+Please create a new recipe.
 """
 
     try:
@@ -141,25 +137,8 @@ Please create a new recipe and estimate the cost.
         )
         
         recipe_text = response.text.strip()
-        
-        # --- BUDGET CHECK LOGIC ---
-        # Search for "$DD.CC" in the AI output
-        cost_match = re.search(r"Total Estimated Cost: \$(\d+\.?\d*)", recipe_text)
-        
-        if cost_match:
-            estimated_cost = float(cost_match.group(1))
-            
-            # THE IF-ELSE STATEMENT
-            if estimated_cost <= budget_limit:
-                status_header = f"✅ BUDGET-FRIENDLY: This meal costs ${estimated_cost:.2f} (Under ${budget_limit:.2f})\n"
-                print(f"💰 Result: Within budget.")
-            else:
-                status_header = f"⚠️ PREMIUM SELECTION: This meal costs ${estimated_cost:.2f} (Exceeds ${budget_limit:.2f})\n"
-                print(f"⚠️ Result: Over budget.")
-        else:
-            status_header = "❓ BUDGET STATUS: Unknown (Cost not detected)\n"
 
-        return status_header + "-"*30 + "\n" + recipe_text
+        return recipe_text
         
     except Exception as e:
         print(f"❌ Error generating recipe: {e}")
