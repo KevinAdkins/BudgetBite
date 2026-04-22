@@ -15,7 +15,7 @@ The goal is to keep it budget-friendly while recommending you healthy meals to m
 ## Prerequisites
 Before running BudgetBite, make sure you have:
 - Python 3.8 or higher installed
-- pip (Python package manager)
+- uv (Python package manager)
 - Git (for cloning the repository)
 
 ## Setup Instructions
@@ -27,12 +27,13 @@ cd BudgetBite
 ```
 
 ### 2. Backend Setup
-
-#### Install Python Dependencies
-Navigate to the backend directory and install required packages:
+### Make venv and install dependencies
+Navigate to backend make venv and install dependencies
 ```bash
 cd backend
-pip install -r requirements.txt
+uv venv
+source .venv/bin/activate
+uv pip install -r requirements.txt
 ```
 
 #### Initialize the Database
@@ -44,7 +45,22 @@ Seed data is stored in [backend/data/meals_seed.csv](backend/data/meals_seed.csv
 The CSV includes pricing fields (`estimated_price`, `currency`, `price_source`, `price_last_updated`) so you can share stable seeded prices without calling external APIs.
 To export the latest DB meals back into CSV for teammates, run:
 ```bash
-python (or py) backend/seed.py --export-csv
+python (or py) seed.py --export-csv
+```
+#### Add Gemini API Key to env file in main directory
+You can find your gemini api key at this link https://aistudio.google.com/api-keys?project=gen-lang-client-0861647321
+```bash
+GEMINI_API_KEY=YOUR GEMINI API KEY HERE
+```
+### Kroger API Setup
+In the same .env file from the Genimi Setup
+Request keys from Mr.Abundis
+```bash
+KROGER_CLIENT_ID=app-name
+KROGER_CLIENT_SECRET=your-api-key
+KROGER_BASE_URL=https://api-ce.kroger.com
+KROGER_SCOPE=product-scope
+KROGER_ZIP_CODE=zip-code
 ```
 
 #### Start the Backend Server
@@ -62,24 +78,22 @@ You should see a message indicating the Flask server is running.
 cd frontend
 ```bash
 
-### Configure Your Network IP
+### Find your IP address and add to .env
 
 Find your local IP address:
 ```bash
 ipconfig on Windows
+hostname -I for Linux
 Look for IPv4 Address for your IP
 ````
 
-In `frontend/app/(tabs)/camera.tsx`, replace the backend URL with your IP:
+In `.env`,  add your IP with the port in the .env.example:
 
-```tsx
-const res = await fetch("http://YOUR_LOCAL_IP:5001/api/analyze", {
-```
-Download the requirments.txt in the frontend folder <br>
+### Download expo imports
 ```bash
-cd frontend
-pip install -r requirements.txt
+npm install
 ```
+
 #### Start the Frontend
 
 ```bash
@@ -92,26 +106,12 @@ If your phone can't connect run:
 npx expo start --web --host tunnel
 ```
 
-### 3. Test the API
+### Test the API
 You can test if the backend is working by visiting these endpoints in your browser:
 - `http://localhost:5001/` - API information
 - `http://localhost:5001/api/meals` - View all meals (pls let me know if it works)
 
-### 4. Gemini API Setup
-Create a .env file
-```bash
-GEMINI_API_KEY=your-api-key
-```
 
-### 5. Kroger API Setup
-In the same .env file from the Genimi Setup
-```bash
-KROGER_CLIENT_ID=app-name
-KROGER_CLIENT_SECRET=your-api-key
-KROGER_BASE_URL=https://api-ce.kroger.com
-KROGER_SCOPE=product-scope
-KROGER_ZIP_CODE=zip-code
-```
 
 ## API Endpoints
 The backend provides the following endpoints:
