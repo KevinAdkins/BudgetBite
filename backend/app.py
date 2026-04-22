@@ -277,6 +277,12 @@ def analyze_image():
             for ing in result.ingredients
         ]
 
+        # Validate minimum ingredient count
+        if len(ingredients) < 2:
+            return jsonify({
+                "error": f"Please provide at least 2 ingredients. Currently detected: {len(ingredients)}. Please take another photo with more ingredients."
+            }), 400
+
         return jsonify(
             _analyze_ingredients_pipeline(
                 ingredients=ingredients,
@@ -319,6 +325,12 @@ def analyze_text():
             {"name": i.strip(), "quantity": None, "unit": None, "category": "unknown"}
             for i in raw.split(',') if i.strip()
         ]
+
+        # Validate minimum ingredient count
+        if len(ingredients) < 2:
+            return jsonify({
+                "error": f"Please provide at least 2 ingredients. Currently entered: {len(ingredients)}. Please add more ingredients."
+            }), 400
 
         return jsonify(
             _analyze_ingredients_pipeline(
