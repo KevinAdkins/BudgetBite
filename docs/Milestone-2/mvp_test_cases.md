@@ -91,6 +91,8 @@ The total cost will vary depending on the pricing strategy selected by the user.
 
 ### Test Case 7 - Expensive Meal
 
+- Fix commit: 7b4aa19 (tier boundary classification)
+
 - **Input:**
 <img width="450" height="238" alt="image" src="https://github.com/user-attachments/assets/8e32e6c8-efe3-45ef-a66e-2f935590e6a6" />
 
@@ -215,7 +217,7 @@ Item Prices:
   - Salt and pepper: $4.99
 
 Priced Count: 12 / 13 \
-Estimated Total: $41.54 \
+Estimated Total: $44.74 \
 Location: 01100002 (78201) \
 Missing: beef stock \
 Tier: medium | Selected Tier: expensive | Result: fail 
@@ -225,6 +227,8 @@ Tier: medium | Selected Tier: expensive | Result: fail
 ---
 
 ### Test Case 8 - Medium Meal
+
+- Fix commit: 7b4aa19 (tier boundary classification)
 
 - **Input:**
 
@@ -349,7 +353,7 @@ Item Prices:
   - Greek yogurt: $1.42
 
 Priced Count: 7 / 10 \
-Estimated Total: $13.51 \
+Estimated Total: $13.27 \
 Location: 01100002 (78201) \
 Missing: baby bella mushrooms, garbanzo beans, baby spinach \
 Tier: cheap | Selected Tier: medium | Result: fail 
