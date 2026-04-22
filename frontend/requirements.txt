@@ -1,6 +1,0 @@
-npm install
-npx expo install expo-camera
-npx expo install expo-image
-npx expo install @expo/vector-icons
-npx expo install expo-linear-gradient
-npx expo install @react-native-async-storage/async-storage
