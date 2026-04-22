@@ -1,61 +1,111 @@
 # Product Requirements Document (PRD)
 
-### Overview
-**Budget Bite** leverages the **Gemini API** for intelligent ingredient recognition and a **SQLite** database (seeded by **TheMealDB API**) to provide verified, grounded recipe recommendations for budget-conscious students.
-1. Problem + target users
-2. Goal/success metrics
-3. MVP user stories
-4. MVP scope vs. non-goals
-5. Acceptance criteria
-6. Assumptions + constraints
+## Overview
+**Budget Bite** uses the **Gemini API (Google)** for image-based ingredient extraction and a **SQLite database** (seeded by TheMealDB API) to provide **verified, grounded recipe recommendations** for budget-conscious users.
 
-### Section 1 Problem + target users
-* **The Problem:** Rising grocery costs and "food deserts" lead students to poor nutritional choices. Lack of affordable, healthy meal ideas contributes to long-term health risks like type 2 diabetes and hypertension.
-* **Target Users:** * **Primary:** College students (TAMUSA) with limited budgets and kitchen tools.
-    * **Secondary:** Busy parents needing quick, verified, and low-cost family meals.
+The system avoids custom computer vision models and instead relies on **Gemini’s multimodal capabilities** to extract ingredients directly from user-submitted images.
 
-### Section 2 Goal/success metrics
-Success is defined by the app's ability to accurately translate a visual or text input into a verified recipe from the local cache.
+This document outlines:
+1. Problem + target users  
+2. Goals / success metrics  
+3. MVP user stories  
+4. MVP scope vs. non-goals  
+5. Acceptance criteria  
+6. Assumptions + constraints  
+
+---
+
+## Section 1: Problem + Target Users
+
+### The Problem
+Rising grocery costs and limited access to affordable, healthy food options lead many students to make poor dietary choices. A lack of quick, budget-friendly meal ideas contributes to long-term health risks such as type 2 diabetes and hypertension.
+
+### Target Users
+- **Primary:** College students (TAMUSA) with limited budgets and kitchen tools  
+- **Secondary:** Busy parents needing quick, affordable, and verified meals  
+
+---
+
+## Section 2: Goals / Success Metrics
+
+Success is defined by the system’s ability to **convert image or text input into grounded, verified recipes**.
 
 | Metric | Target | Definition |
 | :--- | :--- | :--- |
-| **Grounding Accuracy** | 98% | % of recipes suggested that exist within the SQLite cache/TheMealDB. |
-| **Gemini Recognition** | 90% | Success rate of the Gemini API correctly identifying ingredients from user photos. |
-| **Local Cache Latency** | < 2 Seconds | Response time for retrieving recipes already stored in SQLite. |
-| **API Fetch Latency** | < 6 Seconds | Response time when fetching new data from TheMealDB and updating SQLite. |
+| **Grounding Accuracy** | 98% | % of recipes returned that exist in SQLite / TheMealDB |
+| **Gemini Extraction Accuracy** | 90% | % of images where Gemini correctly identifies usable ingredients |
+| **Local Cache Latency** | < 2 seconds | Time to retrieve recipes from SQLite |
+| **API Fetch Latency** | < 6 seconds | Time to fetch and cache new recipes |
 
-### Section 3 MVP user stories
-1. Basic user story: As a student, I want a way to come up with a quick and affordable meal using the ingredients and cooking methods available to me, so that I can eat a good, healthy meal at an affordable price and save time having to come up with a meal.
-2. I am a student with milk, cheese, and eggs, very few ingredients so the app offers the available recipes with the ingredients, but also offers recommendations of recipes with an appropriate budget tier depending on how much the ingredients cost to make the recommended.
-3. User Story: As a mom, I want a healthy, affordable meal to feed my kids, so that I can save time and money, and my kids will be well-fed and have nutritious food to eat.
+---
 
-### Section 4 MVP scope vs. non-goals
-**Must-Have Features**
-- Gemini API Integration
-- SQLite Database
-- TheMealDB Grounding
-- React Frontend
+## Section 3: MVP User Stories
 
-**Nice-to-have features**
-- Nutritional Overlays
-- Calorie Tracking
+1. **Core User Story**  
+   As a student, I want to take a picture of my ingredients or type what I have, so that I can quickly get a cheap and healthy meal idea.
 
-**Explicit non-goals**
-- Will not be a budget tracker just budget how much the food costs.
-- Will not strictly count your calories, it will provide information on calories consumed based on meals 
-- tailor to a specific demographic, like Hispanic or white, but many different cultures
+2. **Low-Ingredient Scenario**  
+   As a student with limited ingredients (e.g., milk, cheese, eggs), I want the app to suggest meals I can make and recommend affordable additions if needed.
 
-### Section 5 Acceptance criteria
+3. **Family Use Case**  
+   As a parent, I want affordable and nutritious meal suggestions, so that I can save time and feed my family well.
 
-- Allow the user to take pictures of their food/ingredients
-- Produce a meal suggestion within 10 seconds
-- Handle an edge case when the user takes a picture that contains no food/ingredients
-- Fail safely when the edge case happens and display an error message to the user
-- Give recommendations for ordering cheap ingredients.
+---
 
-### Section 6 Assumptions + constraints
-- Data access: The CV segmentation model will be trained on open-source data and may have difficulty with edge cases. 
-- Time constraints (what can be done by Milestone 2): Getting a working app, labeling the food for segmentation (tracing)
-  
-- Ethics/privacy limits (safety boundaries, consent): Safeguards on the AI 
-- Platform constraints (APIs, cost limits, deployment limits):
+## Section 4: MVP Scope vs. Non-Goals
+
+### Must-Have Features
+- **Gemini API Image Processing**
+  - Accept image input
+  - Extract ingredient list using structured prompting
+- **Ingredient Normalization Layer**
+  - Clean and standardize Gemini output (e.g., “tomatoes” → “tomato”)
+- **SQLite Database**
+  - Store cached recipes from TheMealDB
+- **Recipe Matching Engine**
+  - Match extracted ingredients to grounded recipes
+- **React Frontend**
+  - Image upload + results display
+
+### Nice-to-Have Features
+- Nutritional overlays  
+- Calorie estimates  
+
+### Explicit Non-Goals
+- Full budget tracking system  
+- Strict calorie tracking  
+- Custom-trained computer vision models  
+- Demographic-specific tailoring  
+
+---
+
+## Section 5: Acceptance Criteria
+
+- User can upload or take a photo of ingredients  
+- System sends image to Gemini API for **ingredient extraction**  
+- Gemini returns a **structured ingredient list (JSON)**  
+- App normalizes ingredients and queries SQLite  
+- System returns at least one grounded recipe within **10 seconds**  
+
+### Edge Cases
+- If no food is detected:
+  - Return a clear error message  
+- If ingredients are insufficient:
+  - Suggest low-cost additional ingredients  
+
+---
+
+## Section 6: Assumptions + Constraints
+
+### Technical Assumptions
+- No CV segmentation model is used  
+- Ingredient extraction is fully handled by Gemini using prompt engineering  
+
+**Example Prompt:**
+```json
+{
+  "instruction": "Extract all visible food ingredients from this image.",
+  "format": {
+    "ingredients": ["string"]
+  }
+}
