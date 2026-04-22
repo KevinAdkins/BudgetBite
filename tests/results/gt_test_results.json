@@ -1,0 +1,2101 @@
+{
+  "test_date": "2026-03-24",
+  "dataset": "Folder-based ingredient dataset",
+  "total_images": 98,
+  "metrics": {
+    "average_precision": 0.7596,
+    "average_recall": 0.9286,
+    "average_f1_score": 0.7958,
+    "total_correct_matches": 100,
+    "total_false_positives": 92,
+    "total_false_negatives": 7
+  },
+  "per_image_results": [
+    {
+      "image": "apple_0001.jpg",
+      "folder": "apple",
+      "ground_truth": [
+        "apple"
+      ],
+      "ai_extracted": [
+        "apple"
+      ],
+      "matches": [
+        "apple"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "apple_0002.jpg",
+      "folder": "apple",
+      "ground_truth": [
+        "apple"
+      ],
+      "ai_extracted": [
+        "apple"
+      ],
+      "matches": [
+        "apple"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "apple_0003.jpg",
+      "folder": "apple",
+      "ground_truth": [
+        "apple"
+      ],
+      "ai_extracted": [
+        "red apple"
+      ],
+      "matches": [
+        "red apple"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "apple_0004.jpg",
+      "folder": "apple",
+      "ground_truth": [
+        "apple"
+      ],
+      "ai_extracted": [
+        "red apple"
+      ],
+      "matches": [
+        "red apple"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "apple_0005.jpg",
+      "folder": "apple",
+      "ground_truth": [
+        "apple"
+      ],
+      "ai_extracted": [
+        "green apple"
+      ],
+      "matches": [
+        "green apple"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "banana_0001.jpg",
+      "folder": "banana",
+      "ground_truth": [
+        "banana"
+      ],
+      "ai_extracted": [
+        "banana"
+      ],
+      "matches": [
+        "banana"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "banana_0002.jpg",
+      "folder": "banana",
+      "ground_truth": [
+        "banana"
+      ],
+      "ai_extracted": [
+        "banana"
+      ],
+      "matches": [
+        "banana"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "banana_0003.jpg",
+      "folder": "banana",
+      "ground_truth": [
+        "banana"
+      ],
+      "ai_extracted": [
+        "banana"
+      ],
+      "matches": [
+        "banana"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "banana_0004.jpg",
+      "folder": "banana",
+      "ground_truth": [
+        "banana"
+      ],
+      "ai_extracted": [
+        "banana"
+      ],
+      "matches": [
+        "banana"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "banana_0005.jpg",
+      "folder": "banana",
+      "ground_truth": [
+        "banana"
+      ],
+      "ai_extracted": [
+        "banana"
+      ],
+      "matches": [
+        "banana"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "bread.100.jpg",
+      "folder": "bread",
+      "ground_truth": [
+        "bread"
+      ],
+      "ai_extracted": [
+        "multi-grain bread",
+        "seeds"
+      ],
+      "matches": [
+        "multi-grain bread"
+      ],
+      "false_positives": [
+        "seeds"
+      ],
+      "false_negatives": [],
+      "precision": 0.5,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.6666666666666666
+    },
+    {
+      "image": "bread.125.jpg",
+      "folder": "bread",
+      "ground_truth": [
+        "bread"
+      ],
+      "ai_extracted": [
+        "bread loaf",
+        "pumpkin seed",
+        "sesame seed"
+      ],
+      "matches": [
+        "bread loaf"
+      ],
+      "false_positives": [
+        "pumpkin seed",
+        "sesame seed"
+      ],
+      "false_negatives": [],
+      "precision": 0.3333333333333333,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 0.5
+    },
+    {
+      "image": "bread.129.jpg",
+      "folder": "bread",
+      "ground_truth": [
+        "bread"
+      ],
+      "ai_extracted": [
+        "multigrain bread"
+      ],
+      "matches": [
+        "multigrain bread"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "bread.130.jpg",
+      "folder": "bread",
+      "ground_truth": [
+        "bread"
+      ],
+      "ai_extracted": [
+        "bread",
+        "flax seed",
+        "pumpkin seed",
+        "raisin",
+        "rolled oats",
+        "sesame seed",
+        "sunflower seed"
+      ],
+      "matches": [
+        "bread"
+      ],
+      "false_positives": [
+        "flax seed",
+        "pumpkin seed",
+        "raisin",
+        "rolled oats",
+        "sesame seed",
+        "sunflower seed"
+      ],
+      "false_negatives": [],
+      "precision": 0.14285714285714285,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.25
+    },
+    {
+      "image": "bread.132.jpg",
+      "folder": "bread",
+      "ground_truth": [
+        "bread"
+      ],
+      "ai_extracted": [
+        "multi-grain bread"
+      ],
+      "matches": [
+        "multi-grain bread"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "butter.102.jpg",
+      "folder": "butter",
+      "ground_truth": [
+        "butter"
+      ],
+      "ai_extracted": [
+        "unsalted butter"
+      ],
+      "matches": [
+        "unsalted butter"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "butter.104.jpg",
+      "folder": "butter",
+      "ground_truth": [
+        "butter"
+      ],
+      "ai_extracted": [
+        "butter compound"
+      ],
+      "matches": [
+        "butter compound"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "butter.106.jpg",
+      "folder": "butter",
+      "ground_truth": [
+        "butter"
+      ],
+      "ai_extracted": [
+        "butter",
+        "toast"
+      ],
+      "matches": [
+        "butter"
+      ],
+      "false_positives": [
+        "toast"
+      ],
+      "false_negatives": [],
+      "precision": 0.5,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.6666666666666666
+    },
+    {
+      "image": "butter.114.jpg",
+      "folder": "butter",
+      "ground_truth": [
+        "butter"
+      ],
+      "ai_extracted": [
+        "unsalted butter"
+      ],
+      "matches": [
+        "unsalted butter"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "butter.115.jpg",
+      "folder": "butter",
+      "ground_truth": [
+        "butter"
+      ],
+      "ai_extracted": [
+        "salted butter"
+      ],
+      "matches": [
+        "salted butter"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "carrots.10.jpg",
+      "folder": "carrots",
+      "ground_truth": [
+        "carrots"
+      ],
+      "ai_extracted": [
+        "carrots",
+        "microgreens",
+        "sesame seeds"
+      ],
+      "matches": [
+        "carrots"
+      ],
+      "false_positives": [
+        "microgreens",
+        "sesame seeds"
+      ],
+      "false_negatives": [],
+      "precision": 0.3333333333333333,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.5
+    },
+    {
+      "image": "carrots.100.jpg",
+      "folder": "carrots",
+      "ground_truth": [
+        "carrots"
+      ],
+      "ai_extracted": [
+        "carrot",
+        "carrot tops"
+      ],
+      "matches": [
+        "carrot",
+        "carrot tops"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "carrots.102.jpg",
+      "folder": "carrots",
+      "ground_truth": [
+        "carrots"
+      ],
+      "ai_extracted": [
+        "avocado",
+        "green chili",
+        "mint",
+        "roasted carrots"
+      ],
+      "matches": [
+        "roasted carrots"
+      ],
+      "false_positives": [
+        "avocado",
+        "green chili",
+        "mint"
+      ],
+      "false_negatives": [],
+      "precision": 0.25,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.4
+    },
+    {
+      "image": "carrots.103.jpg",
+      "folder": "carrots",
+      "ground_truth": [
+        "carrots"
+      ],
+      "ai_extracted": [
+        "carrot"
+      ],
+      "matches": [
+        "carrot"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "carrots.116.jpg",
+      "folder": "carrots",
+      "ground_truth": [
+        "carrots"
+      ],
+      "ai_extracted": [
+        "carrot",
+        "carrot greens"
+      ],
+      "matches": [
+        "carrot",
+        "carrot greens"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "cheese.105.jpg",
+      "folder": "cheese",
+      "ground_truth": [
+        "cheese"
+      ],
+      "ai_extracted": [
+        "blue cheese",
+        "hard cheese",
+        "semi-hard cheese",
+        "soft cheese"
+      ],
+      "matches": [
+        "blue cheese",
+        "hard cheese",
+        "semi-hard cheese",
+        "soft cheese"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "cheese.106.jpg",
+      "folder": "cheese",
+      "ground_truth": [
+        "cheese"
+      ],
+      "ai_extracted": [
+        "parmesan cheese"
+      ],
+      "matches": [
+        "parmesan cheese"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "cheese.121.jpg",
+      "folder": "cheese",
+      "ground_truth": [
+        "cheese"
+      ],
+      "ai_extracted": [
+        "blue cheese"
+      ],
+      "matches": [
+        "blue cheese"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "cheese.123.jpg",
+      "folder": "cheese",
+      "ground_truth": [
+        "cheese"
+      ],
+      "ai_extracted": [
+        "cheddar cheese",
+        "cherry tomato",
+        "cracker"
+      ],
+      "matches": [
+        "cheddar cheese"
+      ],
+      "false_positives": [
+        "cherry tomato",
+        "cracker"
+      ],
+      "false_negatives": [],
+      "precision": 0.3333333333333333,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.5
+    },
+    {
+      "image": "cheese.124.jpg",
+      "folder": "cheese",
+      "ground_truth": [
+        "cheese"
+      ],
+      "ai_extracted": [
+        "hard cheese"
+      ],
+      "matches": [
+        "hard cheese"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "chicken.107.jpg",
+      "folder": "chicken",
+      "ground_truth": [
+        "chicken"
+      ],
+      "ai_extracted": [
+        "black olive",
+        "chicken",
+        "fig",
+        "red onion",
+        "thyme"
+      ],
+      "matches": [
+        "chicken"
+      ],
+      "false_positives": [
+        "black olive",
+        "fig",
+        "red onion",
+        "thyme"
+      ],
+      "false_negatives": [],
+      "precision": 0.2,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.33333333333333337
+    },
+    {
+      "image": "chicken.11.jpg",
+      "folder": "chicken",
+      "ground_truth": [
+        "chicken"
+      ],
+      "ai_extracted": [
+        "chicken drumstick",
+        "parsley"
+      ],
+      "matches": [
+        "chicken drumstick"
+      ],
+      "false_positives": [
+        "parsley"
+      ],
+      "false_negatives": [],
+      "precision": 0.5,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.6666666666666666
+    },
+    {
+      "image": "chicken.111.jpg",
+      "folder": "chicken",
+      "ground_truth": [
+        "chicken"
+      ],
+      "ai_extracted": [
+        "chicken drumstick"
+      ],
+      "matches": [
+        "chicken drumstick"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "chicken.120.jpg",
+      "folder": "chicken",
+      "ground_truth": [
+        "chicken"
+      ],
+      "ai_extracted": [
+        "chicken leg quarter",
+        "coarse salt",
+        "orange",
+        "red sauce",
+        "rosemary"
+      ],
+      "matches": [
+        "chicken leg quarter"
+      ],
+      "false_positives": [
+        "coarse salt",
+        "orange",
+        "red sauce",
+        "rosemary"
+      ],
+      "false_negatives": [],
+      "precision": 0.2,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.33333333333333337
+    },
+    {
+      "image": "chicken.122.jpg",
+      "folder": "chicken",
+      "ground_truth": [
+        "chicken"
+      ],
+      "ai_extracted": [
+        "chicken drumsticks",
+        "parsley",
+        "sauce"
+      ],
+      "matches": [
+        "chicken drumsticks"
+      ],
+      "false_positives": [
+        "parsley",
+        "sauce"
+      ],
+      "false_negatives": [],
+      "precision": 0.3333333333333333,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.5
+    },
+    {
+      "image": "cucumber.10.jpg",
+      "folder": "cucumber",
+      "ground_truth": [
+        "cucumber"
+      ],
+      "ai_extracted": [
+        "black sesame seeds",
+        "cucumber",
+        "edible flower",
+        "herb oil",
+        "leafy greens",
+        "microgreens",
+        "radish",
+        "soft cheese"
+      ],
+      "matches": [
+        "cucumber"
+      ],
+      "false_positives": [
+        "black sesame seeds",
+        "edible flower",
+        "herb oil",
+        "leafy greens",
+        "microgreens",
+        "radish",
+        "soft cheese"
+      ],
+      "false_negatives": [],
+      "precision": 0.125,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.2222222222222222
+    },
+    {
+      "image": "cucumber.102.jpg",
+      "folder": "cucumber",
+      "ground_truth": [
+        "cucumber"
+      ],
+      "ai_extracted": [
+        "cucumber",
+        "kalamata olives",
+        "pesto",
+        "scallion"
+      ],
+      "matches": [
+        "cucumber"
+      ],
+      "false_positives": [
+        "kalamata olives",
+        "pesto",
+        "scallion"
+      ],
+      "false_negatives": [],
+      "precision": 0.25,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.4
+    },
+    {
+      "image": "cucumber.105.jpg",
+      "folder": "cucumber",
+      "ground_truth": [
+        "cucumber"
+      ],
+      "ai_extracted": [
+        "cucumber",
+        "dill",
+        "onion",
+        "red pepper flakes"
+      ],
+      "matches": [
+        "cucumber"
+      ],
+      "false_positives": [
+        "dill",
+        "onion",
+        "red pepper flakes"
+      ],
+      "false_negatives": [],
+      "precision": 0.25,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.4
+    },
+    {
+      "image": "cucumber.109.jpg",
+      "folder": "cucumber",
+      "ground_truth": [
+        "cucumber"
+      ],
+      "ai_extracted": [
+        "cucumber"
+      ],
+      "matches": [
+        "cucumber"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "cucumber.119.jpg",
+      "folder": "cucumber",
+      "ground_truth": [
+        "cucumber"
+      ],
+      "ai_extracted": [
+        "black sesame seeds",
+        "cucumber",
+        "herb oil",
+        "microgreens",
+        "radish",
+        "salad leaves",
+        "yogurt"
+      ],
+      "matches": [
+        "cucumber"
+      ],
+      "false_positives": [
+        "black sesame seeds",
+        "herb oil",
+        "microgreens",
+        "radish",
+        "salad leaves",
+        "yogurt"
+      ],
+      "false_negatives": [],
+      "precision": 0.14285714285714285,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.25
+    },
+    {
+      "image": "eggs.10.jpg",
+      "folder": "eggs",
+      "ground_truth": [
+        "eggs"
+      ],
+      "ai_extracted": [
+        "egg"
+      ],
+      "matches": [
+        "egg"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "eggs.115.jpg",
+      "folder": "eggs",
+      "ground_truth": [
+        "eggs"
+      ],
+      "ai_extracted": [
+        "egg"
+      ],
+      "matches": [
+        "egg"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "eggs.121.jpg",
+      "folder": "eggs",
+      "ground_truth": [
+        "eggs"
+      ],
+      "ai_extracted": [
+        "egg"
+      ],
+      "matches": [
+        "egg"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "eggs.124.jpg",
+      "folder": "eggs",
+      "ground_truth": [
+        "eggs"
+      ],
+      "ai_extracted": [
+        "egg"
+      ],
+      "matches": [
+        "egg"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "eggs.127.jpg",
+      "folder": "eggs",
+      "ground_truth": [
+        "eggs"
+      ],
+      "ai_extracted": [
+        "egg"
+      ],
+      "matches": [
+        "egg"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "fish.102.jpg",
+      "folder": "fish",
+      "ground_truth": [
+        "fish"
+      ],
+      "ai_extracted": [
+        "fish fillet"
+      ],
+      "matches": [
+        "fish fillet"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "fish.12.jpg",
+      "folder": "fish",
+      "ground_truth": [
+        "fish"
+      ],
+      "ai_extracted": [
+        "bread",
+        "lemon",
+        "parsley",
+        "poached egg",
+        "smoked fish"
+      ],
+      "matches": [
+        "smoked fish"
+      ],
+      "false_positives": [
+        "bread",
+        "lemon",
+        "parsley",
+        "poached egg"
+      ],
+      "false_negatives": [],
+      "precision": 0.2,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.33333333333333337
+    },
+    {
+      "image": "fish.123.jpg",
+      "folder": "fish",
+      "ground_truth": [
+        "fish"
+      ],
+      "ai_extracted": [
+        "cheese",
+        "parsley",
+        "potato",
+        "white sauce"
+      ],
+      "matches": [],
+      "false_positives": [
+        "cheese",
+        "parsley",
+        "potato",
+        "white sauce"
+      ],
+      "false_negatives": [
+        "fish"
+      ],
+      "precision": 0.0,
+      "recall": 0.0,
+      "non_food_detected": true,
+      "f1_score": 0
+    },
+    {
+      "image": "fish.132.jpg",
+      "folder": "fish",
+      "ground_truth": [
+        "fish"
+      ],
+      "ai_extracted": [
+        "broccoli",
+        "fish",
+        "haddock",
+        "potato",
+        "sardines"
+      ],
+      "matches": [
+        "fish"
+      ],
+      "false_positives": [
+        "broccoli",
+        "haddock",
+        "potato",
+        "sardines"
+      ],
+      "false_negatives": [],
+      "precision": 0.2,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.33333333333333337
+    },
+    {
+      "image": "fish.133.jpg",
+      "folder": "fish",
+      "ground_truth": [
+        "fish"
+      ],
+      "ai_extracted": [
+        "dry dog food"
+      ],
+      "matches": [],
+      "false_positives": [
+        "dry dog food"
+      ],
+      "false_negatives": [
+        "fish"
+      ],
+      "precision": 0.0,
+      "recall": 0.0,
+      "non_food_detected": true,
+      "f1_score": 0
+    },
+    {
+      "image": "grapes_0001.jpg",
+      "folder": "grapes",
+      "ground_truth": [
+        "grapes"
+      ],
+      "ai_extracted": [
+        "green grapes"
+      ],
+      "matches": [
+        "green grapes"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "grapes_0002.jpg",
+      "folder": "grapes",
+      "ground_truth": [
+        "grapes"
+      ],
+      "ai_extracted": [
+        "purple grapes"
+      ],
+      "matches": [
+        "purple grapes"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "grapes_0003.jpg",
+      "folder": "grapes",
+      "ground_truth": [
+        "grapes"
+      ],
+      "ai_extracted": [
+        "red grape"
+      ],
+      "matches": [
+        "red grape"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "grapes_0004.jpg",
+      "folder": "grapes",
+      "ground_truth": [
+        "grapes"
+      ],
+      "ai_extracted": [
+        "green grapes"
+      ],
+      "matches": [
+        "green grapes"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "grapes_0005.jpg",
+      "folder": "grapes",
+      "ground_truth": [
+        "grapes"
+      ],
+      "ai_extracted": [
+        "grape leaves",
+        "red grapes"
+      ],
+      "matches": [
+        "grape leaves",
+        "red grapes"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "lettuce.10.jpg",
+      "folder": "lettuce",
+      "ground_truth": [
+        "lettuce"
+      ],
+      "ai_extracted": [
+        "lettuce"
+      ],
+      "matches": [
+        "lettuce"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "lettuce.100.jpg",
+      "folder": "lettuce",
+      "ground_truth": [
+        "lettuce"
+      ],
+      "ai_extracted": [],
+      "matches": [],
+      "false_positives": [],
+      "false_negatives": [
+        "lettuce"
+      ],
+      "precision": 0,
+      "recall": 0.0,
+      "non_food_detected": true,
+      "f1_score": 0
+    },
+    {
+      "image": "lettuce.102.jpg",
+      "folder": "lettuce",
+      "ground_truth": [
+        "lettuce"
+      ],
+      "ai_extracted": [
+        "arugula",
+        "breaded fried strips",
+        "creamy sauce",
+        "passion fruit",
+        "pomegranate seeds",
+        "purple microgreens",
+        "sweet chili sauce"
+      ],
+      "matches": [],
+      "false_positives": [
+        "arugula",
+        "breaded fried strips",
+        "creamy sauce",
+        "passion fruit",
+        "pomegranate seeds",
+        "purple microgreens",
+        "sweet chili sauce"
+      ],
+      "false_negatives": [
+        "lettuce"
+      ],
+      "precision": 0.0,
+      "recall": 0.0,
+      "non_food_detected": true,
+      "f1_score": 0
+    },
+    {
+      "image": "lettuce.103.jpg",
+      "folder": "lettuce",
+      "ground_truth": [
+        "lettuce"
+      ],
+      "ai_extracted": [
+        "egg",
+        "kale",
+        "scallion"
+      ],
+      "matches": [],
+      "false_positives": [
+        "egg",
+        "kale",
+        "scallion"
+      ],
+      "false_negatives": [
+        "lettuce"
+      ],
+      "precision": 0.0,
+      "recall": 0.0,
+      "non_food_detected": true,
+      "f1_score": 0
+    },
+    {
+      "image": "lettuce.105.jpg",
+      "folder": "lettuce",
+      "ground_truth": [
+        "lettuce"
+      ],
+      "ai_extracted": [
+        "cilantro",
+        "ground meat",
+        "lettuce",
+        "red onion",
+        "scallion"
+      ],
+      "matches": [
+        "lettuce"
+      ],
+      "false_positives": [
+        "cilantro",
+        "ground meat",
+        "red onion",
+        "scallion"
+      ],
+      "false_negatives": [],
+      "precision": 0.2,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 0.33333333333333337
+    },
+    {
+      "image": "mango_0001.jpg",
+      "folder": "mango",
+      "ground_truth": [
+        "mango"
+      ],
+      "ai_extracted": [
+        "mango"
+      ],
+      "matches": [
+        "mango"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "mango_0002.jpg",
+      "folder": "mango",
+      "ground_truth": [
+        "mango"
+      ],
+      "ai_extracted": [
+        "mango"
+      ],
+      "matches": [
+        "mango"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "mango_0003.jpg",
+      "folder": "mango",
+      "ground_truth": [
+        "mango"
+      ],
+      "ai_extracted": [
+        "mango"
+      ],
+      "matches": [
+        "mango"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "mango_0004.jpg",
+      "folder": "mango",
+      "ground_truth": [
+        "mango"
+      ],
+      "ai_extracted": [
+        "papaya"
+      ],
+      "matches": [],
+      "false_positives": [
+        "papaya"
+      ],
+      "false_negatives": [
+        "mango"
+      ],
+      "precision": 0.0,
+      "recall": 0.0,
+      "non_food_detected": true,
+      "f1_score": 0
+    },
+    {
+      "image": "mango_0005.jpg",
+      "folder": "mango",
+      "ground_truth": [
+        "mango"
+      ],
+      "ai_extracted": [
+        "mango"
+      ],
+      "matches": [
+        "mango"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "milk.100.jpg",
+      "folder": "milk",
+      "ground_truth": [
+        "milk"
+      ],
+      "ai_extracted": [
+        "semi-skimmed milk",
+        "skimmed milk",
+        "whole milk"
+      ],
+      "matches": [
+        "semi-skimmed milk",
+        "skimmed milk",
+        "whole milk"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "milk.101.jpg",
+      "folder": "milk",
+      "ground_truth": [
+        "milk"
+      ],
+      "ai_extracted": [
+        "semi-skimmed milk"
+      ],
+      "matches": [
+        "semi-skimmed milk"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "milk.104.jpg",
+      "folder": "milk",
+      "ground_truth": [
+        "milk"
+      ],
+      "ai_extracted": [
+        "semi-skimmed milk"
+      ],
+      "matches": [
+        "semi-skimmed milk"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "milk.106.jpg",
+      "folder": "milk",
+      "ground_truth": [
+        "milk"
+      ],
+      "ai_extracted": [
+        "semi-skimmed milk"
+      ],
+      "matches": [
+        "semi-skimmed milk"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "milk.107.jpg",
+      "folder": "milk",
+      "ground_truth": [
+        "milk"
+      ],
+      "ai_extracted": [
+        "milk"
+      ],
+      "matches": [
+        "milk"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "onions.10.jpg",
+      "folder": "onions",
+      "ground_truth": [
+        "onions"
+      ],
+      "ai_extracted": [
+        "yellow onion"
+      ],
+      "matches": [
+        "yellow onion"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "onions.109.jpg",
+      "folder": "onions",
+      "ground_truth": [
+        "onions"
+      ],
+      "ai_extracted": [
+        "onion"
+      ],
+      "matches": [
+        "onion"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "onions.110.jpg",
+      "folder": "onions",
+      "ground_truth": [
+        "onions"
+      ],
+      "ai_extracted": [
+        "red onion"
+      ],
+      "matches": [
+        "red onion"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "onions.114.jpg",
+      "folder": "onions",
+      "ground_truth": [
+        "onions"
+      ],
+      "ai_extracted": [
+        "white onion"
+      ],
+      "matches": [
+        "white onion"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "onions.120.jpg",
+      "folder": "onions",
+      "ground_truth": [
+        "onions"
+      ],
+      "ai_extracted": [
+        "red onion"
+      ],
+      "matches": [
+        "red onion"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "orange_0001.jpg",
+      "folder": "orange",
+      "ground_truth": [
+        "orange"
+      ],
+      "ai_extracted": [
+        "orange"
+      ],
+      "matches": [
+        "orange"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "orange_0002.jpg",
+      "folder": "orange",
+      "ground_truth": [
+        "orange"
+      ],
+      "ai_extracted": [
+        "orange"
+      ],
+      "matches": [
+        "orange"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "orange_0003.jpg",
+      "folder": "orange",
+      "ground_truth": [
+        "orange"
+      ],
+      "ai_extracted": [
+        "mandarin orange"
+      ],
+      "matches": [
+        "mandarin orange"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "orange_0004.jpg",
+      "folder": "orange",
+      "ground_truth": [
+        "orange"
+      ],
+      "ai_extracted": [
+        "mandarin orange"
+      ],
+      "matches": [
+        "mandarin orange"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "orange_0005.jpg",
+      "folder": "orange",
+      "ground_truth": [
+        "orange"
+      ],
+      "ai_extracted": [
+        "green grape",
+        "mixed salad greens",
+        "red grape",
+        "tangerine",
+        "tangerine segment"
+      ],
+      "matches": [],
+      "false_positives": [
+        "green grape",
+        "mixed salad greens",
+        "red grape",
+        "tangerine",
+        "tangerine segment"
+      ],
+      "false_negatives": [
+        "orange"
+      ],
+      "precision": 0.0,
+      "recall": 0.0,
+      "non_food_detected": false,
+      "f1_score": 0
+    },
+    {
+      "image": "peppers.100.jpg",
+      "folder": "peppers",
+      "ground_truth": [
+        "peppers"
+      ],
+      "ai_extracted": [
+        "chili pepper"
+      ],
+      "matches": [
+        "chili pepper"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "peppers.101.jpg",
+      "folder": "peppers",
+      "ground_truth": [
+        "peppers"
+      ],
+      "ai_extracted": [
+        "green bell pepper"
+      ],
+      "matches": [
+        "green bell pepper"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "peppers.109.jpg",
+      "folder": "peppers",
+      "ground_truth": [
+        "peppers"
+      ],
+      "ai_extracted": [
+        "red chili pepper"
+      ],
+      "matches": [
+        "red chili pepper"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "peppers.114.jpg",
+      "folder": "peppers",
+      "ground_truth": [
+        "peppers"
+      ],
+      "ai_extracted": [
+        "black pepper",
+        "corn",
+        "red bell pepper",
+        "scallion"
+      ],
+      "matches": [
+        "black pepper",
+        "red bell pepper"
+      ],
+      "false_positives": [
+        "corn",
+        "scallion"
+      ],
+      "false_negatives": [],
+      "precision": 0.5,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.6666666666666666
+    },
+    {
+      "image": "peppers.115.jpg",
+      "folder": "peppers",
+      "ground_truth": [
+        "peppers"
+      ],
+      "ai_extracted": [
+        "green bell pepper",
+        "ground beef",
+        "onion",
+        "red chili",
+        "white rice"
+      ],
+      "matches": [
+        "green bell pepper"
+      ],
+      "false_positives": [
+        "ground beef",
+        "onion",
+        "red chili",
+        "white rice"
+      ],
+      "false_negatives": [],
+      "precision": 0.2,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.33333333333333337
+    },
+    {
+      "image": "strawberry_0001.jpg",
+      "folder": "strawberry",
+      "ground_truth": [
+        "strawberry"
+      ],
+      "ai_extracted": [
+        "strawberry"
+      ],
+      "matches": [
+        "strawberry"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "strawberry_0002.jpg",
+      "folder": "strawberry",
+      "ground_truth": [
+        "strawberry"
+      ],
+      "ai_extracted": [
+        "strawberry"
+      ],
+      "matches": [
+        "strawberry"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "strawberry_0003.jpg",
+      "folder": "strawberry",
+      "ground_truth": [
+        "strawberry"
+      ],
+      "ai_extracted": [
+        "strawberry"
+      ],
+      "matches": [
+        "strawberry"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "strawberry_0004.jpg",
+      "folder": "strawberry",
+      "ground_truth": [
+        "strawberry"
+      ],
+      "ai_extracted": [
+        "strawberry"
+      ],
+      "matches": [
+        "strawberry"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "strawberry_0005.jpg",
+      "folder": "strawberry",
+      "ground_truth": [
+        "strawberry"
+      ],
+      "ai_extracted": [
+        "strawberry"
+      ],
+      "matches": [
+        "strawberry"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": false,
+      "f1_score": 1.0
+    },
+    {
+      "image": "tomato.110.jpg",
+      "folder": "tomato",
+      "ground_truth": [
+        "tomato"
+      ],
+      "ai_extracted": [
+        "cherry tomato",
+        "cream cheese",
+        "dill",
+        "paprika"
+      ],
+      "matches": [
+        "cherry tomato"
+      ],
+      "false_positives": [
+        "cream cheese",
+        "dill",
+        "paprika"
+      ],
+      "false_negatives": [],
+      "precision": 0.25,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.4
+    },
+    {
+      "image": "tomato.119.jpg",
+      "folder": "tomato",
+      "ground_truth": [
+        "tomato"
+      ],
+      "ai_extracted": [
+        "cherry tomato"
+      ],
+      "matches": [
+        "cherry tomato"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "tomato.121.jpg",
+      "folder": "tomato",
+      "ground_truth": [
+        "tomato"
+      ],
+      "ai_extracted": [
+        "cherry tomato"
+      ],
+      "matches": [
+        "cherry tomato"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "tomato.129.jpg",
+      "folder": "tomato",
+      "ground_truth": [
+        "tomato"
+      ],
+      "ai_extracted": [
+        "cherry tomato",
+        "dried rosemary"
+      ],
+      "matches": [
+        "cherry tomato"
+      ],
+      "false_positives": [
+        "dried rosemary"
+      ],
+      "false_negatives": [],
+      "precision": 0.5,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.6666666666666666
+    },
+    {
+      "image": "tomato.135.jpg",
+      "folder": "tomato",
+      "ground_truth": [
+        "tomato"
+      ],
+      "ai_extracted": [
+        "plum tomato"
+      ],
+      "matches": [
+        "plum tomato"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "yogurt.101.jpg",
+      "folder": "yogurt",
+      "ground_truth": [
+        "yogurt"
+      ],
+      "ai_extracted": [
+        "strawberry",
+        "yogurt"
+      ],
+      "matches": [
+        "yogurt"
+      ],
+      "false_positives": [
+        "strawberry"
+      ],
+      "false_negatives": [],
+      "precision": 0.5,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.6666666666666666
+    },
+    {
+      "image": "yogurt.102.jpg",
+      "folder": "yogurt",
+      "ground_truth": [
+        "yogurt"
+      ],
+      "ai_extracted": [
+        "greek yogurt"
+      ],
+      "matches": [
+        "greek yogurt"
+      ],
+      "false_positives": [],
+      "false_negatives": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 1.0
+    },
+    {
+      "image": "yogurt.106.jpg",
+      "folder": "yogurt",
+      "ground_truth": [
+        "yogurt"
+      ],
+      "ai_extracted": [
+        "coffee",
+        "lowfat yogurt"
+      ],
+      "matches": [
+        "lowfat yogurt"
+      ],
+      "false_positives": [
+        "coffee"
+      ],
+      "false_negatives": [],
+      "precision": 0.5,
+      "recall": 1.0,
+      "non_food_detected": true,
+      "f1_score": 0.6666666666666666
+    }
+  ]
+}

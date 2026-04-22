@@ -19,7 +19,7 @@ After Milestone 2, BudgetBite has an impressive full-stack system (React Native 
 | Task | Owner | Description |
 |---|---|---|
 | Write Demo Guide | Jorge | Create `/docs/Milestone 2 Demo Guide.md` with exact steps, commands, env vars, and all 3 flows (success, refusal, budget failure) |
-| Complete test cases | Eric | Fill in the 6 empty test cases in `mvp_test_cases.md` (4 success + 2 refusal) with real data and screenshots |
+| Complete test cases | Jorge | Fill in the 6 empty test cases in `mvp_test_cases.md` (4 success + 2 refusal) with real data and screenshots |
 | Update PRD | Jorge | Update PRD.md to reflect current system: Kroger API, budget tiers, Gemini Vision (remove CV segmentation references) |
 
 ### P1 — Missing Features (Days 2–5)
@@ -53,13 +53,13 @@ After Milestone 2, BudgetBite has an impressive full-stack system (React Native 
 
 ## Definition of Done (Sprint 2)
 
-- [ ] Demo Guide exists with all 3 required flows documented
-- [ ] All 10 test cases have real data (no empty cells)
+- [x] Demo Guide exists with all 3 required flows documented
+- [X] All 10 test cases have real data (no empty cells)
 - [x] Text input path works in addition to camera
 - [x] Budget regeneration loop implemented in code
-- [ ] Validator no longer flags measurement words as unmatched ingredients
+- [X] Validator no longer flags measurement words as unmatched ingredients
 - [x] Port and IP issues resolved
-- [ ] Each team member has code commits this sprint
+- [x] Each team member has code commits this sprint
 
 ---
 

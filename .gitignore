@@ -18,6 +18,8 @@ ENV/
 ingredients_output.json
 matched_recipes.json
 generated_recipe.txt
+ingredients.json
+matched_ingredients.json
 
 # Database files
 *.db
