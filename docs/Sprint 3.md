@@ -60,7 +60,7 @@ The final demo on April 29 is the opportunity to show that the recipe + validati
 - [ ] `docs/Final Demo Guide.md` exists with all three flows documented end to end
 - [ ] Test cases 1–6 filled with real data; test cases 11–13 added for text input
 - [ ] PRD updated, no CV segmentation language remaining
-- [ ] `analyze_text()` calls the same validation + pricing + regeneration helpers as the image path
+- [x] `analyze_text()` calls the same validation + pricing + regeneration helpers as the image path
 - [ ] `mvp_results.md` refreshed with post-fix metrics
 - [ ] README port-5000 references gone
 - [ ] At least one full rehearsal completed from a clean clone
