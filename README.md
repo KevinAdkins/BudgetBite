@@ -75,9 +75,11 @@ In `frontend/app/(tabs)/camera.tsx`, replace the backend URL with your IP:
 ```tsx
 const res = await fetch("http://YOUR_LOCAL_IP:5001/api/analyze", {
 ```
-Download the requirments.txt in the frontend folder
+Download the requirments.txt in the frontend folder <br>
+```bash
 cd frontend
 pip install -r requirements.txt
+```
 #### Start the Frontend
 
 ```bash
