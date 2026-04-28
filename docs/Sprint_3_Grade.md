@@ -119,7 +119,7 @@ Eric's contribution is the lightest. Jorge's work pattern continues to be one bi
 - [x] PRD updated, no CV segmentation language remaining
 - [x] `analyze_text()` calls same validation + pricing + regeneration helpers as image path
 - [~] `mvp_results.md` refreshed with post-fix metrics (partial)
-- [ ] README port-5000 references gone
+- [x] README port-5000 references gone
 - [x] At least one full rehearsal completed from a clean clone (timed at 3:26)
 - [x] Validator fix covered by a unit test
 - [x] Every team member has at least one meaningful commit this sprint
