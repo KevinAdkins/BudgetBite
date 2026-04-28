@@ -1,13 +1,15 @@
 # Sprint 3 Grade, Venture 3: BudgetBite
 
-**Graded:** April 28, 2026
+**Graded:** April 28, 2026 (revised April 28, 2026 after re-review)
 **Sprint Window:** April 15 – April 24, 2026 (extended from April 21)
 **Final Demo:** April 29, 2026
 **Final Deliverables Due:** May 3, 2026
 
 ---
 
-## Overall Grade: 87/100
+## Overall Grade: 90/100
+
+**Revision note:** This grade was revised from 87 to 90 after a re-review found that Eric's Apr 21 commit (`bf535d2`) had already shipped the text-input test cases 11-13 plus the README port-5000 cleanup (3 of 4 lines) and a new validator regression test (`testing/test_validator_measurement_words.py`). The original grade undercounted those.
 
 **Note on individual grades:** This is the venture-level grade. Members who severely under-contributed during Sprint 3 may receive a reduced individual grade applied separately.
 
@@ -15,23 +17,22 @@
 
 ## Summary
 
-Sprint 3 unified the text input path with the full pipeline (the largest technical task in the plan), closed every Sprint 2 documentation carryover, and produced the team's first end-to-end timed rehearsal. Both `analyze_image()` and `analyze_text()` in `backend/app.py` now call a shared `_analyze_ingredients_pipeline()` helper, so the text input flows through validation, Kroger pricing, and budget regeneration just like image input does. The Final Demo Guide, PRD update, test cases 1-6, Sprint 3 Summary, and slide deck outline all landed. The team also recorded a timed rehearsal video and committed rehearsal notes. Two real test files appeared in `tests/`: `test_batch_extract.py` and `test_ground_truth_extraction.py`, both backing the Gemini extraction work.
+Sprint 3 unified the text input path with the full pipeline (the largest technical task in the plan), closed every Sprint 2 documentation carryover, and produced the team's first end-to-end timed rehearsal. Both `analyze_image()` and `analyze_text()` in `backend/app.py` now call a shared `_analyze_ingredients_pipeline()` helper, so the text input flows through validation, Kroger pricing, and budget regeneration just like image input does. The Final Demo Guide, PRD update, test cases 1-6, the three new text-input test cases 11-13, Sprint 3 Summary, and slide deck outline all landed. The team also recorded a timed rehearsal video and committed rehearsal notes. Three real test files appeared (`tests/test_batch_extract.py`, `tests/test_ground_truth_extraction.py`, `testing/test_validator_measurement_words.py`), backing the Gemini extraction work and the measurement-word validator fix.
 
-Contribution remained Kevin-heavy (14 commits) and David-heavy (7 plus 2 as dabun01). Jorge's three Sprint-2-carryover P0 doc tasks (Demo Guide, PRD update, Sprint 3 Summary) all landed, but in a single Apr 21 commit on the last day of the original sprint window, repeating the Sprint 2 pattern of doc work landing all at once. Eric (RaspyPiano24270) shipped one Sprint 3 commit, Alvaro shipped four through his two GitHub identities. The Copilot SWE agent produced two automated commits.
+Contribution remained Kevin-heavy (14 commits) and David-heavy (7 plus 2 as dabun01). Jorge's three Sprint-2-carryover P0 doc tasks (Demo Guide, PRD update, Sprint 3 Summary) all landed, but in a single Apr 21 commit on the last day of the original sprint window, repeating the Sprint 2 pattern of doc work landing all at once. Eric (RaspyPiano24270) shipped one Sprint 3 commit on Apr 21 that bundled three deliverables: test cases 11-13, README port cleanup, and the measurement-words validator test file. Alvaro shipped four through his two GitHub identities. The Copilot SWE agent produced two automated commits.
 
-The grade sits at 87 because:
-1. The README still has port-5000 references on line 141 even though the dev server runs on 5001 (P1 task missed).
-2. The text-input test cases (11-13) the plan called for are not visible in `mvp_test_cases.md`.
-3. The post-fix `mvp_results.md` numbers refresh is partial.
-4. Documentation work continues to concentrate in last-minute commits rather than spread across the sprint.
+The grade sits at 90 because:
+1. The README still has one port-5000 reference on line 137 even though the dev server runs on 5001 (the curl examples on lines 296-308 were fixed in window).
+2. The post-fix `mvp_results.md` numbers refresh is partial.
+3. Documentation work continues to concentrate in last-minute commits rather than spread across the sprint.
 
-None of these are demo-blocking. The text-path unification, validator unit tests, and rehearsal evidence are the strong signals.
+None of these are demo-blocking. The text-path unification, validator unit tests, three new text-input test cases, and rehearsal evidence are the strong signals.
 
 ---
 
 ## Category Breakdown
 
-### 1. Task Completion (34/40)
+### 1. Task Completion (36/40)
 
 **P0 (4 of 4 complete):**
 - Final Demo Guide: shipped as `docs/final-demo-guide.md`.
@@ -39,11 +40,11 @@ None of these are demo-blocking. The text-path unification, validator unit tests
 - PRD update: shipped. "No CV segmentation model is used" now in PRD; pipeline matches implemented Gemini Vision + Kroger flow.
 - Text input unified with full pipeline: shipped. Both endpoints call `_analyze_ingredients_pipeline()`. This is the single most important Sprint 3 task and it landed cleanly.
 
-**P1 (2 of 4 complete):**
+**P1 (3 of 4 complete):**
 - Re-run budget tier test cases 7 and 8: partial. `mvp_results.md` mentions tier classifier is correct on boundary cases but full 20-test rerun was not executed.
 - Update `mvp_results.md` with post-fix numbers: partial.
-- README port-5000 cleanup: not done. Line 141 still says "If port 5000 is already in use, you can change it by modifying `app.py`" (the actual port is 5001).
-- 3 new text-input test cases (11-13): not visible in `mvp_test_cases.md`.
+- README port-5000 cleanup: partial. Eric's Apr 21 commit `bf535d2` fixed the curl examples on lines 296-308 (5000 → 5001); line 137 ("If port 5000 is already in use") was missed in window and fixed Apr 28.
+- 3 new text-input test cases (11-13): shipped. Eric's Apr 21 commit `bf535d2` added Test Case 11 (success), 12 (empty-list refusal), and 13 (over-budget triggering regeneration) at lines 469-591 of `docs/Milestone-2/mvp_test_cases.md`.
 
 **P2 (4 of 4 complete):**
 - First end-to-end rehearsal: shipped (`Sprint_3_Rehearsal_notes.md` + timed rehearsal video, 3:26).
@@ -63,12 +64,13 @@ None of these are demo-blocking. The text-path unification, validator unit tests
 - Pricing routes consolidated, frontend types refactored.
 - Two auto-bot merge commits in the history (`copilot-swe-agent[bot]`). Acceptable for conflict resolution but worth noting.
 
-### 3. Documentation (13/15)
+### 3. Documentation (14/15)
 
 - Final Demo Guide is concrete and step-by-step.
 - PRD reflects the implemented system.
 - Sprint 3 Summary lists what shipped clearly.
-- README port reference is stale and contradicts the running app. This is the kind of detail a grader will catch.
+- Test cases 11-13 added with full input/output detail and pass/fail reasoning.
+- README port reference on line 137 is still stale and contradicts the running app, even though the curl examples were fixed.
 
 ### 4. Testing / Evaluation (14/15)
 
@@ -83,10 +85,10 @@ None of these are demo-blocking. The text-path unification, validator unit tests
 | KevinAdkins | 14 | Saved-recipes feature, frontend polish, requirements, README touchups | Strong |
 | David Abundis (David) | 7 + 2 (dabun01) | PRD revision, text input feature, error path tests | Strong |
 | Alvaro Gonzalez (Alvaro) | 2 + 2 (Orange-Juice03) | Validator regression test, pricing routes, typo fixes | Active |
-| RaspyPiano24270 (Eric) | 1 | Sprint 3 task completion (single commit) | Light |
+| RaspyPiano24270 (Eric) | 1 | Sprint 3 task completion: text-input test cases 11-13, README port cleanup (3 of 4 lines), `test_validator_measurement_words.py` regression test, rehearsal video rename | Light count, substantive commit |
 | JorgeMunoz (Jorge) | 1 | Sprint 3 deliverables consolidation (single large commit covering Demo Guide, PRD update, Sprint 3 Summary, slide outline) | Light but the doc work did land |
 
-Eric's contribution is the lightest. Jorge's work pattern continues to be one big commit at the end of the sprint rather than incremental progress across the week.
+Eric's commit count is the lightest, but the single Apr 21 commit bundled three real deliverables (test cases 11-13, README port cleanup, validator measurement-words test). Jorge's work pattern continues to be one big commit at the end of the sprint rather than incremental progress across the week.
 
 ---
 
@@ -100,8 +102,8 @@ Eric's contribution is the lightest. Jorge's work pattern continues to be one bi
 | P0 | Unify text input with full pipeline | Kevin + David | Done |
 | P1 | Re-run budget tier test cases 7 and 8 | Alvaro | Partial |
 | P1 | Update mvp_results.md | Alvaro | Partial |
-| P1 | README port cleanup | Eric | Not done |
-| P1 | Add 3 new text-input test cases (11-13) | Eric | Not visible |
+| P1 | README port cleanup | Eric | Partial (3 of 4 lines fixed Apr 21; line 137 fixed Apr 28) |
+| P1 | Add 3 new text-input test cases (11-13) | Eric | Done (Apr 21, `bf535d2`) |
 | P2 | First end-to-end rehearsal | Kevin | Done |
 | P2 | Validator unit tests | Alvaro | Done |
 | P2 | Frontend polish pass | Kevin | Done |
@@ -115,11 +117,11 @@ Eric's contribution is the lightest. Jorge's work pattern continues to be one bi
 ## Definition of Done (Sprint 3) Check
 
 - [x] `docs/Final Demo Guide.md` exists with all three flows
-- [~] Test cases 1-6 filled with real data; test cases 11-13 added for text input (1-6 done, 11-13 not visible)
+- [x] Test cases 1-6 filled with real data; test cases 11-13 added for text input
 - [x] PRD updated, no CV segmentation language remaining
 - [x] `analyze_text()` calls same validation + pricing + regeneration helpers as image path
 - [~] `mvp_results.md` refreshed with post-fix metrics (partial)
-- [x] README port-5000 references gone
+- [~] README port-5000 references mostly gone (curl examples fixed; line 137 still stale at deadline)
 - [x] At least one full rehearsal completed from a clean clone (timed at 3:26)
 - [x] Validator fix covered by a unit test
 - [x] Every team member has at least one meaningful commit this sprint
@@ -137,6 +139,4 @@ The May 3 package is required to be under `docs/Final_Demo/` in the repo. Save t
 
 Sprint 3 carryovers worth closing in the same window:
 
-5. **Fix README port-5000 references**. Lines 137-140 and 296-302 still say port 5000; the app runs on 5001.
-6. **Add text-input test cases 11-13** to `mvp_test_cases.md`: one success, one refusal (empty list), one over-budget triggering regeneration. The text path is unified now, so these are easy to exercise.
-7. **Refresh `mvp_results.md` with post-fix metrics**. Validator-fix hallucination rate, post-tier-fix budget pass rate, and the regeneration success rate (how often regeneration brings a recipe into budget on retry). The numbers exist in your test runs, just need to be written into the doc.
+5. **Refresh `mvp_results.md` with post-fix metrics**. Validator-fix hallucination rate, post-tier-fix budget pass rate, and the regeneration success rate (how often regeneration brings a recipe into budget on retry). The numbers exist in your test runs, just need to be written into the doc.
