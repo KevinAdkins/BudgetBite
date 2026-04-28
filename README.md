@@ -138,7 +138,7 @@ The backend provides the following endpoints:
 ## Troubleshooting
 
 ### Port Already in Use
-If port 5000 is already in use, you can change it by modifying `app.py`:
+If port 5001 is already in use, you can change it by modifying `app.py`:
 ```python
 if __name__ == '__main__':
     app.run(debug=True, port=5001, host='0.0.0.0')  # Change to any available port
