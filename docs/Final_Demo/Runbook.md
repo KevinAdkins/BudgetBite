@@ -112,6 +112,7 @@ Taking pictures is the easiest with the phone camera
 
 - Regeneration Flow
   - Provide this text input: filet mignon steak, lobster tails, sea scallops, king crab legs, black truffle oil, fresh parmesan cheese, heavy cream, unsalted butter, yukon gold potatoes, asparagus, extra virgin olive oil, garlic, shallots, fresh thyme, fresh rosemary, lemon, sea salt, black pepper
+  - Select the the cheap budget tier
  
 How to read Budget Results
 <img width="1356" height="184" alt="image" src="https://github.com/user-attachments/assets/5a677598-bb5f-4bbd-9b1e-8ead03e1cb6a" />
