@@ -95,7 +95,11 @@ export default function Camera() {
     setFacing((prev) => (prev === "back" ? "front" : "back"));
   };
 
-  const analyzeImage = async (imageUri: string, tier: BudgetTier) => {
+  const analyzeImage = async (
+    imageUri: string,
+    tier: BudgetTier,
+    opts?: { regenerate?: boolean; max_regeneration_attempts?: number },
+  ) => {
     setAnalyzing(true);
     try {
       const response = await fetch(imageUri);
@@ -115,7 +119,12 @@ export default function Camera() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: base64, budget_tier: tier }),
+          body: JSON.stringify({
+            image: base64,
+            budget_tier: tier,
+            regenerate_recipe: Boolean(opts?.regenerate),
+            max_regeneration_attempts: opts?.max_regeneration_attempts ?? 3,
+          }),
         },
       );
 
@@ -130,7 +139,10 @@ export default function Camera() {
     }
   };
 
-  const analyzeText = async () => {
+  const analyzeText = async (opts?: {
+    regenerate?: boolean;
+    max_regeneration_attempts?: number;
+  }) => {
     if (!ingredientText.trim()) {
       alert("Please enter some ingredients first.");
       return;
@@ -145,6 +157,8 @@ export default function Camera() {
           body: JSON.stringify({
             ingredients: ingredientText,
             budget_tier: budgetTier || "tier1",
+            regenerate_recipe: Boolean(opts?.regenerate),
+            max_regeneration_attempts: opts?.max_regeneration_attempts ?? 3,
           }),
         },
       );
@@ -173,7 +187,10 @@ export default function Camera() {
     return pricing.estimatedTotal ?? pricing.subtotal ?? null;
   };
 
-  const renderBudgetSummary = (result: AnalysisResult) => {
+  const renderBudgetSummary = (
+    result: AnalysisResult,
+    onRegenerate?: () => void,
+  ) => {
     const estimatedTotal = getEstimatedTotal(result);
     const budgetLimit = formatCurrency(result.budget_limit ?? null);
     const estimatedLabel = formatCurrency(estimatedTotal);
@@ -188,6 +205,12 @@ export default function Camera() {
     return (
       <View style={styles.budgetSummaryCard}>
         <Text style={styles.budgetSummaryTitle}>💰 Budget Check</Text>
+        <View style={styles.budgetSummaryRow}>
+          <Text style={styles.budgetSummaryLabel}>Using budget</Text>
+          <Text style={styles.budgetSummaryValue}>
+            {budgetTier ? BUDGET_TIERS[budgetTier].label : "None"}
+          </Text>
+        </View>
         <Text style={styles.budgetSummaryStatus}>{statusLabel}</Text>
 
         <View style={styles.budgetSummaryRow}>
@@ -220,9 +243,25 @@ export default function Camera() {
         ) : null}
 
         {result.can_regenerate ? (
-          <Text style={styles.budgetSummaryHint}>
-            You can regenerate this recipe with a higher attempt limit.
-          </Text>
+          <>
+            <Text style={styles.budgetSummaryHint}>
+              You can regenerate this recipe with a higher attempt limit.
+            </Text>
+            {onRegenerate ? (
+              <Pressable
+                style={[
+                  styles.previewBtn,
+                  styles.previewBtnAccent,
+                  { marginTop: 8 },
+                ]}
+                onPress={() => onRegenerate()}
+              >
+                <Text style={[styles.previewBtnText, { color: "#000" }]}>
+                  🔁 Regenerate Recipe
+                </Text>
+              </Pressable>
+            ) : null}
+          </>
         ) : null}
       </View>
     );
@@ -473,7 +512,9 @@ export default function Camera() {
             <Text style={styles.analysisIngredients}>
               {textResult.ingredients.map((i) => i.name).join(", ")}
             </Text>
-            {renderBudgetSummary(textResult)}
+            {renderBudgetSummary(textResult, () =>
+              analyzeText({ regenerate: true, max_regeneration_attempts: 3 }),
+            )}
             <Text style={styles.analysisTitle}>🍽️ Matched Recipes</Text>
             {renderRecipeList(
               textResult.matched_recipes,
@@ -636,6 +677,12 @@ export default function Camera() {
           <Text style={styles.analysisIngredients}>
             {analysisResult.ingredients.map((i) => i.name).join(", ")}
           </Text>
+          {renderBudgetSummary(analysisResult, () =>
+            analyzeImage(uri, (budgetTier as BudgetTier) || "tier1", {
+              regenerate: true,
+              max_regeneration_attempts: 3,
+            }),
+          )}
           <Text style={styles.analysisTitle}>🍽️ Matched Recipes</Text>
           {renderRecipeList(
             analysisResult.matched_recipes,

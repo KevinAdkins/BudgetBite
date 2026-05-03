@@ -7,7 +7,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Optional
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
@@ -74,7 +74,12 @@ def load_extracted_ingredients(json_file: str) -> List[str]:
     return unique
 
 
-def generate_recipe(matched_recipes: List[Dict], extracted_ingredients: List[str]) -> str:
+def generate_recipe(
+    matched_recipes: List[Dict],
+    extracted_ingredients: List[str],
+    budget_tier: Optional[str] = None,
+    budget_limit: Optional[float] = None,
+) -> str:
     """Generate a new recipe based on matched recipes from database."""
     
     if not matched_recipes:
@@ -100,6 +105,13 @@ RULES:
 2. You may assume salt, pepper, and basic cooking oil are available ($0.00 cost).
 3. Do NOT add ingredients not in the list.
 
+BUDGET GUIDANCE:
+- If a `budget_limit` is provided, aim for an estimated total cost less than or equal to that value.
+    Include an explicit line `Total Estimated Cost: $X.YY` in the output (approximate is fine).
+- If `budget_tier` is `tier2`, prefer a recipe whose estimated cost falls in the $25.00-$50.00 range and
+    indicate the estimated total similarly.
+- If no budget guidance is provided, focus on practical, reasonable choices.
+
 OUTPUT FORMAT:
 Recipe Name: [Name]
 Category: [Category]
@@ -122,6 +134,9 @@ Here are the top matching recipes:
 
 Available Ingredients:
 {ingredients_list}
+
+Budget Tier: {budget_tier or 'none'}
+Budget Limit: {f'${budget_limit:.2f}' if isinstance(budget_limit, (int, float)) else 'none'}
 
 Please create a new recipe.
 """

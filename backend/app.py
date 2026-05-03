@@ -122,7 +122,13 @@ def _analyze_ingredients_pipeline(
             generated_recipe_pricing_ingredients = []
 
             try:
-                generated_recipe = generate_recipe(top_matches, extracted_ingredient_names)
+                # Pass budget info into the recipe generator so the AI can respect cost targets
+                generated_recipe = generate_recipe(
+                    top_matches,
+                    extracted_ingredient_names,
+                    budget_tier,
+                    budget_limit,
+                )
             except Exception as recipe_error:
                 recipe_generation_error = str(recipe_error)
                 break
